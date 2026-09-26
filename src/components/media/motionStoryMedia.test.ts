@@ -12,6 +12,7 @@ import {
   MOTION_STORY_FRAME_RADIUS_MAX_PX,
   MOTION_STORY_MAX_PX_PER_SECOND,
   MOTION_STORY_MIN_PX_PER_SECOND,
+  MOTION_STORY_PLAYBACK_RATE,
   MOTION_STORY_SCRUB_WINDOW_SECONDS,
   MOTION_STORY_VIDEO_DRIFT_END_PERCENT,
   MOTION_STORY_VIDEO_END_PADDING_SECONDS,
@@ -25,6 +26,7 @@ import {
   getMotionStoryCtaVisualScale,
   getMotionStoryFrameInsetPx,
   getMotionStoryFrameRadiusPx,
+  getMotionStoryPlaybackRate,
   getMotionStoryVisibleCopyOpacity,
   getMotionStoryVideoDriftPercent,
   getMotionStoryVideoScale,
@@ -106,6 +108,66 @@ describe('motion story progress clamping', () => {
 
     for (const value of nonFinite) {
       expect(clampMotionStoryProgress(value)).toBe(0);
+    }
+  });
+});
+
+describe('motion story film transport', () => {
+  /*
+   * Scroll-scrubbing with `currentTime` seeks painted a stalled film: each seek
+   * into an unbuffered region had to download that segment before a frame could
+   * be shown, so the video froze instead of moving. The film now plays natively
+   * at a reduced rate and scroll only trims how much of it is on screen.
+   *
+   * A rate strictly below 1 is what makes the browser decode and present real
+   * frames. At 1.0 or above it would race the scrub again.
+   */
+  it('plays the film below real time so frames are actually decoded', () => {
+    expect(MOTION_STORY_PLAYBACK_RATE).toBeLessThan(1);
+    expect(MOTION_STORY_PLAYBACK_RATE).toBeGreaterThan(0.1);
+  });
+
+  it('maps scroll progress onto a rate, not onto a timestamp', () => {
+    for (const progress of [0, 0.25, 0.5, 0.75, 1, -1, 2, Number.NaN]) {
+      const rate = getMotionStoryPlaybackRate(progress);
+
+      expect(Number.isFinite(rate)).toBe(true);
+      expect(rate).toBeLessThanOrEqual(1);
+      expect(rate).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('eases the rate in and out of the track instead of snapping', () => {
+    // A hard rate change at the boundaries reads as a gear shift while scrolling.
+    const start = getMotionStoryPlaybackRate(0);
+    const justInside = getMotionStoryPlaybackRate(0.02);
+    const end = getMotionStoryPlaybackRate(1);
+
+    expect(justInside).toBeGreaterThan(0);
+    expect(start).toBeLessThanOrEqual(MOTION_STORY_PLAYBACK_RATE);
+    expect(end).toBeLessThanOrEqual(MOTION_STORY_PLAYBACK_RATE);
+    expect(Math.abs(justInside - start)).toBeLessThan(0.2);
+    expect(Math.abs(end - justInside)).toBeLessThan(0.2);
+  });
+
+  it('keeps the rate inside the range the browser accepts', () => {
+    // Safari refuses playbackRate values below 0.5 on some sources, and a rate
+    // above 2 can drop frames. The ramp must stay in a safe band.
+    for (const progress of progressSweep()) {
+      const rate = getMotionStoryPlaybackRate(progress);
+
+      expect(rate, String(progress)).toBeGreaterThanOrEqual(0.25);
+      expect(rate, String(progress)).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('never returns a negative or non-finite rate for invalid progress', () => {
+    for (const value of [Number.NaN, Number.POSITIVE_INFINITY, -5, 9]) {
+      const rate = getMotionStoryPlaybackRate(value);
+
+      expect(rate).not.toBeNaN();
+      expect(rate).toBeGreaterThanOrEqual(0);
+      expect(rate).toBeLessThanOrEqual(1);
     }
   });
 });

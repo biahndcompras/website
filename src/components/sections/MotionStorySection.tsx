@@ -12,15 +12,18 @@ import { useI18n } from '../../i18n/I18nProvider';
 import Reveal from '../motion/Reveal';
 import {
   MOTION_STORY_CTA_VISUAL_SCALE_END,
+  clampMotionStoryProgress,
   getMotionStoryCopyBeat,
   getMotionStoryCtaCopyOpacity,
   getMotionStoryCtaCopyShiftPx,
   getMotionStoryCtaVisualScale,
   getMotionStoryFrameInsetPx,
   getMotionStoryFrameRadiusPx,
+  getMotionStoryPlaybackRate,
   getMotionStoryVideoDriftPercent,
   getMotionStoryVideoScale,
-  mapProgressToMotionStoryTime,
+  MOTION_STORY_PLAYBACK_RATE,
+  MOTION_STORY_SCRUB_WINDOW_SECONDS,
   resolveMotionStoryPosterSource,
   resolveMotionStoryVideoSource,
 } from '../media/motionStoryMedia';
@@ -166,6 +169,21 @@ export default function MotionStorySection() {
     setPosterFailed(false);
   }, [posterSrc, videoSrc]);
 
+  /*
+    Transport, not seeking.
+
+    Driving `currentTime` from scroll looked right in the code and stalled on
+    screen: with `preload="metadata"` only a fraction of the clip was buffered,
+    so every seek past it had to download before a frame could be painted. The
+    film is now allowed to play natively at a reduced rate, and scroll decides
+    how much of it is on screen. The browser keeps presenting real frames, so
+    slow scrolling always shows movement and there is no download wait between
+    input and motion.
+
+    Scroll still has full authority: leaving the stage, or any large jump, seeks
+    so the film cannot drift far from the scroll position, and the visible range
+    is clamped to the documented window.
+  */
   useEffect(() => {
     const video = videoRef.current;
     if (!video) {
@@ -174,8 +192,11 @@ export default function MotionStorySection() {
 
     if (!isMotionActive) {
       // Reduced motion and mobile keep the film on its first frame.
+      video.pause();
+
       try {
         video.currentTime = 0;
+        video.playbackRate = MOTION_STORY_PLAYBACK_RATE;
       } catch {
         // The poster stays available when the first frame cannot be decoded.
       }
@@ -183,45 +204,86 @@ export default function MotionStorySection() {
       return;
     }
 
-    let isSeeking = false;
-    let pendingTime: number | null = null;
+    const markMediaUnavailable = () => setMediaState('fallback');
 
-    const markMediaUnavailable = () => {
-      pendingTime = null;
-      isSeeking = false;
-      setMediaState('fallback');
+    const windowEnd = (): number => {
+      if (!Number.isFinite(video.duration) || video.duration <= 0) {
+        return 0;
+      }
+
+      return Math.min(video.duration, MOTION_STORY_SCRUB_WINDOW_SECONDS);
     };
 
-    const seekTo = (time: number) => {
+    /*
+      Only a coarse correction, so normal scrolling never fights playback. A
+      one-frame tolerance means continuous slow scrolling is left alone and the
+      film simply runs; a deliberate jump across the section snaps into place.
+    */
+    const DRIFT_TOLERANCE_SECONDS = 0.35;
+
+    const correctDrift = (progress: number) => {
+      const end = windowEnd();
+      if (end <= 0) {
+        return;
+      }
+
+      const expectedTime = clampMotionStoryProgress(progress) * end;
+      if (Math.abs(video.currentTime - expectedTime) <= DRIFT_TOLERANCE_SECONDS) {
+        return;
+      }
+
       try {
-        video.currentTime = time;
-        isSeeking = true;
+        video.currentTime = expectedTime;
       } catch {
         markMediaUnavailable();
       }
     };
 
-    const isAlreadyAt = (time: number) =>
-      time === 0
-        ? video.currentTime === 0
-        : Math.abs(video.currentTime - time) < 0.005;
+    /*
+      Scroll progress alone cannot answer whether the stage is on screen: it
+      reads 0 both "before the section" and "at the very start of the track",
+      so a progress check would keep decoding frames nobody can see. The track's
+      own geometry is the honest signal.
+    */
+    const isStageVisible = (): boolean => {
+      const track = trackRef.current;
+      if (!track) {
+        return false;
+      }
+
+      const rect = track.getBoundingClientRect();
+
+      return rect.bottom > 0 && rect.top < window.innerHeight;
+    };
 
     const applyProgress = (progress: number) => {
-      const targetTime = mapProgressToMotionStoryTime(progress, video.duration);
-      if (targetTime === null) {
+      if (!isStageVisible()) {
+        if (!video.paused) {
+          video.pause();
+        }
+
+        if (video.currentTime > 0.05) {
+          try {
+            video.currentTime = 0;
+          } catch {
+            markMediaUnavailable();
+          }
+        }
+
         return;
       }
 
-      if (video.seeking || isSeeking) {
-        pendingTime = targetTime;
-        return;
+      const rate = getMotionStoryPlaybackRate(progress);
+
+      if (video.playbackRate !== rate) {
+        video.playbackRate = rate;
       }
 
-      if (isAlreadyAt(targetTime)) {
-        return;
-      }
+      correctDrift(progress);
 
-      seekTo(targetTime);
+      if (video.paused) {
+        video.play().catch(markMediaUnavailable);
+      }
     };
 
     const handleLoadedData = () => {
@@ -229,41 +291,52 @@ export default function MotionStorySection() {
 
       try {
         video.currentTime = 0;
+        video.playbackRate = getMotionStoryPlaybackRate(smoothProgress.get());
       } catch {
-        // Browsers can briefly reject seeks while metadata settles.
+        // Browsers can briefly reject transport changes while metadata settles.
       }
 
       applyProgress(smoothProgress.get());
     };
 
-    const handleSeeked = () => {
-      isSeeking = false;
-
-      if (pendingTime === null) {
-        return;
-      }
-
-      const timeToSeek = pendingTime;
-      pendingTime = null;
-
-      if (isAlreadyAt(timeToSeek)) {
-        return;
-      }
-
-      seekTo(timeToSeek);
-    };
-
     video.addEventListener('loadeddata', handleLoadedData);
-    video.addEventListener('seeked', handleSeeked);
     video.addEventListener('error', markMediaUnavailable);
 
     const unsubscribe = smoothProgress.on('change', applyProgress);
+    // The stage can leave the viewport without progress ever changing, e.g. a
+    // resize or a scroll that lands entirely outside the track. Watching the
+    // track's visibility is what actually decides playback.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) {
+            video.pause();
+
+            if (video.currentTime > 0.05) {
+              try {
+                video.currentTime = 0;
+              } catch {
+                markMediaUnavailable();
+              }
+            }
+          } else {
+            applyProgress(smoothProgress.get());
+          }
+        }
+      },
+      { threshold: 0 },
+    );
+    const track = trackRef.current;
+    if (track) {
+      observer.observe(track);
+    }
 
     return () => {
       video.removeEventListener('loadeddata', handleLoadedData);
-      video.removeEventListener('seeked', handleSeeked);
       video.removeEventListener('error', markMediaUnavailable);
       unsubscribe();
+      observer.disconnect();
+      video.pause();
     };
   }, [isMotionActive, smoothProgress]);
 
@@ -305,11 +378,16 @@ export default function MotionStorySection() {
                 className="home-motion-story__film"
                 src={videoSrc}
                 poster={posterSrc}
-                preload="metadata"
+                /*
+                  `auto` matters now that the film plays natively. With
+                  `metadata` the browser holds only a few seconds, and playback
+                  keeps stalling on the network instead of showing motion.
+                */
+                preload="auto"
                 autoPlay={false}
                 playsInline
                 muted
-                loop={false}
+                loop
                 disablePictureInPicture
                 style={filmStyle}
               />

@@ -8,7 +8,7 @@
 
 ```text
 npm test -- --run
-15 test files, 146 tests passed
+15 test files, 151 tests passed
 
 npm run lint
 passed (tsc --noEmit)
@@ -186,44 +186,82 @@ The Hero keeps its 400vh scrub track at every width by design.
 - Console: 0 errors and 0 warnings across all eight routes (only Vite and React
   DevTools info messages).
 
-## MotionStory scrub-rate evidence
+## MotionStory transport evidence
 
-The report was that the second video "runs too fast when scrolling". Measured, the
-cause was the ratio between the film length and the scroll available, not the
-seeking code. Seek latency was already 12–57ms across the whole file, buffered or
-not, so buffering was never the bottleneck.
+Two separate defects were reported on the second video. The first attempt fixed
+the wrong one.
 
-| | Before | After |
+**Defect 1 — "runs too fast when scrolling".** The film was 23.06s mapped across
+a 200vh track, which left only 900px of scrollable distance at 1440×900. That is
+39px of scroll per second of footage, about 2.5s of film skipped per wheel tick.
+The Hero, which felt right, runs at 174px/sec.
+
+**Defect 2 — "the video stays static".** The first fix raised the rate to
+120px/sec by lengthening the track and capping the window. That made the pacing
+acceptable but did not address the freeze. Measured cause: the element carried
+`preload="metadata"`, so only 4.67s of the 23.06s clip was buffered. Every seek
+past that point had to download its segment before a frame could be presented.
+Measured seek cost ranged 12–97ms even after warming, and a slow drag painted the
+same frame repeatedly.
+
+### Fix: play the film, let scroll trim it
+
+Seeking is gone. The film plays natively at a reduced rate and scroll decides how
+much of it is on screen, so the browser keeps decoding real frames and there is
+never a download wait between scroll input and visible motion.
+
+| | Seeking | Native playback |
 |---|---|---|
-| Film length | 23.06s | 23.06s |
-| Seconds played by the track | 23.06s | 12s window |
-| Track height | 200vh | 260vh |
-| Scrollable distance @1440×900 | 900px | 1440px |
-| Scroll per second of footage | 39px | 120px |
-| Film seconds per 100px of scroll | 2.56s | 0.83s |
-| Film seconds per wheel tick | ~2.5s | ~0.8s |
+| `preload` | `metadata` | `auto` |
+| Buffered | 4.67s of 23.06s | 17.9s and climbing |
+| `readyState` | 1 | 4 |
+| Transport | paused, `currentTime` per frame | playing, rate 0.5 |
+| Distinct frames in 45 rAF with scroll still | 40 of 60 | **45 of 45** |
+| `paused` during the section | true | false |
 
-Forward scrub across the track at 144×144px steps:
-`0 → 0.91 → 2.03 → 3.22 → 4.39 → 5.59 → 6.78 → 7.95 → 9.19 → 10.41 → 11.59`,
-monotonic throughout. Reversing down returns
-`11.74 → 10.54 → 8.82 → 6.80 → 4.85 → 2.83 → 0.83`, so the film is reversible and
-never gets stuck on a frame.
+The decisive measurement: with scroll held completely still, the film now
+advances 0.37s across 45 frames and paints 45 distinct frames. Before, it
+repeated frames while the browser chased the network.
 
-The budget is enforced, not just documented. `MOTION_STORY_SCRUB_WINDOW_SECONDS`
-lives in `motionStoryMedia.ts` and the track height lives in `index.css`; the
-media test reads the live CSS value and asserts the combined rate stays between
-`MOTION_STORY_MIN_PX_PER_SECOND` (90) and `MOTION_STORY_MAX_PX_PER_SECOND` (170).
-The ceiling is the Home Hero's own 174px/sec, so this section can never outrun
-the opening statement. Editing either side of the ratio without the other fails
-the suite.
+Scroll keeps full authority. A 0.35s tolerance means continuous scrolling is
+never fought; a deliberate jump across the section snaps the film into place.
+Scrubbing the track forward gives `1.07 → 2.60 → 4.07 → 5.45 → 7.11 → 8.43 →
+9.94 → 11.43`, always playing, never exceeding the 12s window, with the rate
+easing 0.25 → 0.5 → 0.25 at the track ends.
 
-Unaffected by the change:
+An `IntersectionObserver` on the track stops playback when the stage leaves the
+viewport. Progress alone cannot decide this: it reads 0 both "before the section"
+and "at the start of the track", so a progress check would keep decoding frames
+nobody can see. Measured: inside the section playing at 5.56s; scrolled up
+`paused: true, t: 0`; returned playing at 3.23s; scrolled past the end
+`paused: true, t: 0`.
 
-- Mobile 390px: `data-cinematic="false"`, film parked at frame 0, 0 overflow.
-- Reduced motion: `data-cinematic="false"`, `data-reduced-motion="true"`, both copy
-  beats at opacity 1.
-- Hero: 400vh track, 15.52s, 174px/sec, unchanged.
-- Home page height 19422px (~22 viewports); the longer track adds 540px.
+### Guarded by tests
+
+- The rate is always in `[0.25, 1]` — below real time so frames decode, and
+  inside the band Safari accepts (it refuses some rates under 0.5).
+- The rate eases in and out rather than stepping.
+- Invalid progress never yields a negative or non-finite rate.
+- The 90–170px/sec scrub budget from the first fix is retained, computed from the
+  live CSS track height, so the pacing cannot regress while the transport changes.
+
+### The Hero was not modified
+
+```
+git diff 62cab51 HEAD -- src/components/media/heroMedia.ts \
+  src/components/media/ScrollVideoHero.tsx src/components/Hero.tsx
+(empty — byte-identical to the initial commit)
+```
+
+Verified at runtime: Hero track 3600px (`h-[400vh]`), `bia-origin-hero.mp4`,
+15.52s, `preload="metadata"`, `paused`, seek scrub
+`scrollY 900 → 5.17s`, `1800 → 10.33s`, `2700 → 15.50s`. Identical to before.
+
+### Unaffected
+
+- Reduced motion: `data-cinematic="false"`, `currentTime` 0 → 0 over 1.5s, static.
+- Mobile 390px: `paused: true`, `t: 0`, 0 overflow.
+- All six routes: 0 horizontal overflow, exactly one `h1` each.
 
 ## Media record
 

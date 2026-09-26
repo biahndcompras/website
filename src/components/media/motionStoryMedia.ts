@@ -25,6 +25,25 @@ export const MOTION_STORY_VIDEO_END_PADDING_SECONDS = 0.02;
 export const MOTION_STORY_SCRUB_WINDOW_SECONDS = 12;
 
 /**
+ * Transport model: the film plays, scroll only trims it.
+ *
+ * Seeking `currentTime` per scroll frame looked correct in code and stalled on
+ * screen. With `preload="metadata"` only ~4.7s of the 23s clip was buffered, so
+ * every seek past that point had to download the segment before a frame could be
+ * presented: measured seek cost ranged 12–97ms, and slow scrolling painted the
+ * same frame repeatedly. The film read as frozen.
+ *
+ * Native playback at a reduced rate fixes that. The browser keeps decoding and
+ * presenting real frames while scroll decides how much of the film is on
+ * screen, so there is never a wait between scroll input and visible motion.
+ */
+export const MOTION_STORY_PLAYBACK_RATE = 0.5;
+
+/** Rate ramps across this progress range so the transport eases in and out. */
+const PLAYBACK_RATE_RAMP = [0, 0.08, 0.92, 1] as const;
+const PLAYBACK_RATE_OUTPUT = [0.25, MOTION_STORY_PLAYBACK_RATE, MOTION_STORY_PLAYBACK_RATE, 0.25] as const;
+
+/**
  * Scrub-rate budget, in pixels of scroll per second of footage. Measured at a
  * 900px viewport, where the scrollable distance is `(trackVh - 1) * 900`.
  *
@@ -153,6 +172,29 @@ export function mapProgressToMotionStoryTime(
       : playableSeconds - MOTION_STORY_VIDEO_END_PADDING_SECONDS;
 
   return clampMotionStoryProgress(progress) * maxTime;
+}
+
+/**
+ * Playback rate for a given scroll position. The film eases up to
+ * `MOTION_STORY_PLAYBACK_RATE` through the body of the track and eases back down
+ * at the ends, so entering and leaving the section does not read as a cut.
+ *
+ * At 0.25x the ends are still slow enough to decode smoothly, and the ramp
+ * itself is gradual rather than a step change in transport speed.
+ */
+export function getMotionStoryPlaybackRate(progress: number): number {
+  const normalizedProgress = clampMotionStoryProgress(progress);
+  const rate = interpolateClamped(
+    normalizedProgress,
+    PLAYBACK_RATE_RAMP,
+    PLAYBACK_RATE_OUTPUT,
+  );
+
+  if (!Number.isFinite(rate)) {
+    return MOTION_STORY_PLAYBACK_RATE;
+  }
+
+  return Math.min(1, Math.max(0, rate));
 }
 
 export function getMotionStoryFrameInsetPx(progress: number): number {

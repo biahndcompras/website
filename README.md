@@ -116,8 +116,18 @@ This is the normalized web derivative of `src/assets/17190655-uhd_3840_2160_24fp
 
 Behavior contract:
 
-- Desktop (≥1024px) and motion allowed: 260vh track, sticky stage pinned below the fixed header, scrubbed film, animated frame bounds, cross-fading copy.
+- Desktop (≥1024px) and motion allowed: 260vh track, sticky stage pinned below the fixed header, a film that plays natively at a reduced rate, animated frame bounds, cross-fading copy.
 - The copy is two beats that cross-fade so at least one is always readable across the whole track. The stage never opens or closes on empty copy.
+- The film is **played, not scrubbed**. `preload="auto"`, `loop`, and a
+  `playbackRate` between 0.25 and 0.5 that eases with scroll. Driving
+  `currentTime` from scroll instead looks equivalent in code but stalls on
+  screen: with `preload="metadata"` only a few seconds of the clip are buffered,
+  so every seek beyond that has to download before a frame can be presented.
+- Scroll still has full authority. A 0.35s tolerance lets continuous scrolling
+  play undisturbed, while a deliberate jump snaps the film to the right frame.
+  An `IntersectionObserver` on the track pauses playback and rewinds when the
+  stage leaves the viewport — scroll progress cannot decide this, because it
+  reads `0` both "before the section" and "at the start of the track".
 - The CTA block keeps a fixed copy column beside a bounded right visual that grows with `transform: scale()` only. Copy, link, and focus ring are never dimmed, moved, or covered; the link points at the existing `#bia-process` anchor.
 - Below 1024px, or with `prefers-reduced-motion: reduce`, the section is a plain document flow: video, both copy beats, and the CTA in order, with no sticky geometry, no scrub, and no overflow.
 - The section and its scroll track must never set `overflow`. An overflow ancestor becomes the sticky scrollport and silently disables the stage. Overflow is confined to the stage, the film frame, and the CTA cells. `data-cinematic` on the section is the single flag shared by the CSS geometry and the scroll transforms.
