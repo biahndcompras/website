@@ -2,6 +2,10 @@
 
 A bilingual React/Vite site for BIA Honduras, built around an editorial coffee-origin story and a scroll-scrubbed film hero.
 
+> **Picking this up in a new session?** Read [`STATE.md`](./STATE.md) first — it
+> records what was built, how, and what is still outstanding. `verification.md`
+> holds the measured evidence.
+
 ## Run locally
 
 **Prerequisite:** Node.js
