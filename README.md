@@ -35,6 +35,27 @@ application path — not only `/careers` but also `/nosotros`, `/marcas`,
 to `index.html`. Otherwise a direct request to one of them returns the host's 404
 page instead of the app.
 
+### Vercel
+
+`vercel.json` carries the rewrite and is required for production:
+
+```json
+{
+  "cleanUrls": true,
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
+```
+
+Without the rewrite, in-app navigation still works — the router never touches
+the network — so the site looks healthy while you click around. The failure only
+appears on a hard reload or a shared link, where the host answers the client
+route with its own 404. That is easy to misread as a language bug: switching to
+English, then reloading, appears to "reset" the site, when the app never loaded
+at all. `src/app/vercelDeploy.test.ts` locks the config so it cannot go missing.
+
+Note that `rewrites` runs after the static filesystem check, so `/media/*.mp4`
+and the hashed JS/CSS bundles are still served as files.
+
 ### Content truth on the subpages
 
 `src/content/secondaryPages.ts` is the single source of copy for the five

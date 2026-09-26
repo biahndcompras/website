@@ -8,17 +8,48 @@
 
 ```text
 npm test -- --run
-14 test files, 138 tests passed
+15 test files, 146 tests passed
 
 npm run lint
 passed (tsc --noEmit)
 
 npm run build
-passed (Vite production build, 2126 modules)
+passed (Vite production build)
 
 node ~/.agents/skills/impeccable/scripts/detect.mjs --json src/pages src/components src/index.css
 []
 ```
+
+## Vercel SPA rewrite evidence
+
+Reported on `biahonduras.vercel.app` as "the ES/EN selector does not work
+properly". Reproduced against production:
+
+| Step | Result |
+|---|---|
+| Load `/` | Home renders, `lang="es"`, no storage value |
+| Click **EN** | `lang="en"`, `localStorage['bia-honduras-locale']="en"`, H1 becomes "From Honduras, with purpose.", nav becomes Home/About us/Brands/Quality/Talent |
+| Hard reload of `/` | Still English — the selector itself is correct |
+| Click **Nosotros** in-app | `/nosotros` renders "A story that begins in the land." |
+| Click **EN** | `lang="en"`, storage `"en"`, H1 English |
+| **Hard reload of `/nosotros`** | **`404: NOT_FOUND` — "This page doesn't exist"** |
+
+The same sequence against `vite preview` and against a local server applying the
+`vercel.json` rewrite keeps the page in English across the reload. Removing the
+rewrite from that local server reproduces the 404 exactly.
+
+Root cause: the deployment had no `vercel.json`, so Vercel answered the client
+route with its own 404 instead of the app shell. In-app navigation is unaffected
+because React Router never hits the network, which is why the site looked fine
+while browsing and only failed on reload or a shared link. The saved locale was
+intact in `localStorage` the whole time — the app simply never reloaded.
+
+Fix: `vercel.json` with `cleanUrls` and a catch-all rewrite to `/index.html`,
+locked by `src/app/vercelDeploy.test.ts`. Verified with the rewrite applied —
+all ten client routes survive a direct hard load, English persists across a
+reload on `/talento`, and `/media/bia-origin-hero.mp4` plus the hashed JS bundle
+still return 200 with their real content types, since Vercel checks the
+filesystem before applying rewrites.
 
 ## Route and metadata evidence
 
