@@ -1,0 +1,27 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# macOS AppleDouble sidecars. This project lives on a removable volume, so the
+# filesystem scatters ._* files next to everything; they are not real content.
+._*
+.DS_Store
+
+# Tooling artifacts from browser QA runs.
+.playwright-mcp/
+
+# Legacy Cover Architectural Labs scaffolding. The BIA site imports nothing from
+# any of these, and shipping them would put ~40MB of unrelated apps and
+# architectural footage in the deployment repo.
+orbs/
+assets/
+
+# Source masters for the shipped film derivatives. public/media/ carries the
+# normalized web versions the site actually serves; the 4K master and its
+# untrimmed siblings are ~96MB and must not enter git history.
+src/assets/

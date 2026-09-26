@@ -1,0 +1,10 @@
+{
+  "name": "BIA Honduras",
+  "description": "Bilingual editorial website for BIA Honduras, the Honduran pillar of BIA Foods, connecting Honduran coffee origin with people, quality, and food.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "BILINGUAL_EDITORIAL_EXPERIENCE",
+    "SCROLL_SCRUBBED_MEDIA_HERO",
+    "RESPONSIVE_MOBILE_NAVIGATION"
+  ]
+}
