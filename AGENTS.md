@@ -7,7 +7,7 @@ Bilingual (ES/EN) corporate site for BIA Honduras. React 19 · Vite · React Rou
 ## Commands
 
 ```bash
-npm test -- --run    # 151 tests. Without --run, vitest watches.
+npm test -- --run    # 164 tests. Without --run, vitest watches.
 npm run lint         # tsc --noEmit
 npm run build
 npm run dev -- --port 3400   # 3000 is hardcoded in the script and often taken
@@ -100,16 +100,38 @@ invariants are asserted against the stylesheet, not against component props.
   change to `vercel.json`. In-app navigation always looks fine because React
   Router never hits the network — this reads as a routing or locale bug when it
   is neither. Check a hard reload of a subpage first.
-  **Last checked 2026-09-26: still 404** — verify with
+  **Last checked 2026-10-01: still 404** — verify with
   `curl -s -o /dev/null -w '%{http_code}' https://biahonduras.vercel.app/nosotros`
-  before assuming it is fixed.
+  before assuming it is fixed. Note the local Vercel CLI is authenticated as
+  `biamxai-2610s-projects`, which does **not** own that domain, so the CLI cannot
+  trigger the redeploy. See STATE.md §7.1.
 - **A "language selector broken" report is usually not the selector.** The
   persisted locale lives in `localStorage['bia-honduras-locale']` and survives
   reloads. If it appears to reset, the app probably never reloaded.
 - `dev` script hardcodes `--port=3000`; pass `--port 3400` if 3000 is taken.
 - The working copy is on a removable volume, so the filesystem scatters `._*`
   AppleDouble files everywhere. They are gitignored; don't try to commit or
-  delete them individually.
+  delete them individually. **`vitest.config.ts` now excludes `**/._*`** because a
+  sidecar beside a new test file (e.g. `src/._palette.test.ts`) is a binary stub
+  that matches the test glob and kills esbuild with `Unexpected "\x00"`, failing
+  a test *file* while every test itself passes.
+- **`page.screenshot({ clip })` clips in DOCUMENT coordinates, not viewport
+  ones.** Pairing it with `getBoundingClientRect()` mixes scroll positions and
+  invents contrast failures. Call `page.screenshot()` with no `clip` so the image
+  maps 1:1 to the viewport.
+- **This browser silently rejects CSS gradients in `ctx.fillStyle`.** An audit
+  that rebuilds a background on a canvas sees no gradient at all and reports the
+  page background. Sample real screenshot pixels instead.
+- **Contrast audits need `prefers-reduced-motion: reduce`.** Without it, reveal
+  animations are sampled mid-transition and light text reads as sitting on a
+  light background.
+- **`tsc` and the test suite cannot see CSS.** A bulk rename once collapsed
+  `--bia-blue`, `--bia-blue-light` and `--bia-blue-deep` into one token (a
+  `\b` word boundary also matches before the `-` in `--bia-blue-light`), leaving
+  two custom properties undefined. Every `var()` of the missing name became an
+  invalid declaration silently inheriting, across 50 rules, with all tests green.
+  `src/palette.test.ts` asserts the palette contract against the real stylesheet —
+  read it before changing any colour token.
 - `orbs/`, `assets/`, and `src/assets/` (~137MB) are **gitignored legacy**.
   Nothing imports from them; all served media comes from `public/media/`. Do not
   re-add them to git, and do not "fix" a missing import by reaching into them.

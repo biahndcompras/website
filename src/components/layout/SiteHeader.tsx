@@ -9,6 +9,7 @@ import {
 } from '../../app/routes';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { Locale } from '../../types';
+import BiaLogo from './BiaLogo';
 import {
   getSiteNavigation,
   type SiteNavigationItem,
@@ -20,19 +21,6 @@ export interface SiteHeaderProps {
 }
 
 const locales: readonly Locale[] = ['es', 'en'];
-
-function BiaLockup() {
-  return (
-    <span
-      className="bia-lockup"
-      aria-label="BIA Honduras"
-      data-logo-placeholder="true"
-    >
-      <span className="bia-lockup__primary">BIA</span>
-      <span className="bia-lockup__secondary">HONDURAS / FOODS</span>
-    </span>
-  );
-}
 
 export default function SiteHeader({
   heroId = 'bia-hero',
@@ -199,7 +187,7 @@ export default function SiteHeader({
       <ArrowUpRight aria-hidden="true" size={15} strokeWidth={1.5} />
     </>
   );
-  const brandContent = <BiaLockup />;
+  const brandContent = <BiaLogo className="bia-logo" />;
 
   return (
     <header

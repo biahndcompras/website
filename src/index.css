@@ -3,41 +3,74 @@
 @theme {
   --font-sans: "DM Sans", "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces", "Iowan Old Style", "Baskerville", Georgia, serif;
-  --color-bia-navy: #082a49;
-  --color-bia-navy-deep: #061b31;
-  --color-bia-blue: #2c6c96;
-  --color-bia-ivory: #f5f0e7;
-  --color-bia-copper: #b56e4b;
+  --color-bia-navy: #1c3565;
+  --color-bia-navy-deep: #16294a;
+  --color-bia-blue: #4a88fa;
+  --color-bia-blue-light: #6fa6fd;
+  --color-bia-blue-deep: #2a63c4;
+  --color-bia-mist: #e9f1fe;
   --color-bia-mountain: #5d7b68;
-  --color-bia-slate: #627383;
+  --color-bia-slate: #566878;
 }
 
+/*
+ * BIA Honduras brand palette.
+ *
+ * The brand blue is #4A88FA and the brand navy is #1C3565, both taken from the
+ * official logo. #4A88FA has a mid luminance (0.2597), which means it can never
+ * carry 4.5:1 text against white, mist or navy. So it is not one token doing
+ * every job -- it is split by role, and the role decides which token to use:
+ *
+ *   --bia-blue-light (#6FA6FD)  small text ON navy / navy-deep.  4.90:1 on navy.
+ *   --bia-blue-deep  (#2A63C4)  small text ON mist / mist-soft.  5.35:1 on mist.
+ *                              Also solid panels that carry light text. 5.02:1.
+ *   --bia-blue       (#4A88FA)  graphics: rules, borders, dots, fills, gradients,
+ *                              the logo mark, and text at 3:1 or larger only.
+ *
+ * Reading that back: #4A88FA on its own is legal for non-text (3:1) and for
+ * large text (3:1), and nothing else. Anything 16px or smaller needs
+ * --bia-blue-light on a dark surface or --bia-blue-deep on a light one.
+ */
 :root {
   color-scheme: light;
-  --bia-navy: #082a49;
-  --bia-navy-deep: #061b31;
-  --bia-blue: #2c6c96;
-  --bia-ivory: #f5f0e7;
-  --bia-ivory-soft: #fbf8f1;
-  --bia-copper: #b56e4b;
+  --bia-navy: #1c3565;
+  --bia-navy-deep: #16294a;
+  --bia-blue: #4a88fa;
+  --bia-blue-light: #6fa6fd;
+  --bia-blue-deep: #2a63c4;
+  --bia-mist: #e9f1fe;
+  --bia-mist-soft: #f4f8fe;
   --bia-mountain: #5d7b68;
-  --bia-slate: #627383;
-  --bia-line: rgba(8, 42, 73, 0.18);
-  --bia-line-light: rgba(245, 240, 231, 0.24);
-  --bia-focus: #d28a62;
+  --bia-slate: #566878;
+  --bia-line: rgba(28, 53, 101, 0.18);
+  --bia-line-light: rgba(233, 241, 254, 0.24);
+  /*
+   * The one focus colour that clears 3:1 against BOTH surfaces: 3.32:1 on
+   * mist and 3.19:1 on navy. A single value is deliberate -- the focus ring
+   * lands on light and dark sections alike, and two tokens would mean guessing
+   * per component which one is correct at every call site.
+   */
+  --bia-focus: #4480ee;
+  /*
+   * Focus on the solid blue panels. --bia-focus cannot do this job: it sits at
+   * L 0.228 and blue-deep at L 0.134, only 1.5:1 apart, so the ring would
+   * vanish on the very panels that need it. A pale blue clears 3:1 there
+   * (3.64:1) while staying in the family.
+   */
+  --bia-focus-on-blue: #b3d0ff;
   --bia-header-height: 5rem;
 }
 
 html {
   min-width: 320px;
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
   scroll-behavior: smooth;
 }
 
 body {
   min-width: 320px;
   min-height: 100vh;
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
   color: var(--bia-navy);
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
@@ -64,8 +97,10 @@ video {
 }
 
 ::selection {
-  background: var(--bia-copper);
-  color: var(--bia-ivory);
+  /* Navy, not the brand blue: no luminance can reach 4.5:1 on #4A88FA, so a
+     blue highlight would drop selected text to 2.98:1. Navy on mist is 10.6:1. */
+  background: var(--bia-navy);
+  color: var(--bia-mist);
 }
 
 :focus-visible {
@@ -75,7 +110,7 @@ video {
 
 .bia-app-shell {
   min-height: 100vh;
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
 }
 
 .bia-main {
@@ -95,9 +130,9 @@ video {
   left: 0.75rem;
   z-index: 100;
   transform: translateY(-180%);
-  border: 2px solid var(--bia-ivory);
+  border: 2px solid var(--bia-mist);
   background: var(--bia-navy);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   padding: 0.75rem 1rem;
   font-size: 0.75rem;
   font-weight: 700;
@@ -126,14 +161,14 @@ video {
 
 .site-header--dark {
   border-color: var(--bia-line-light);
-  background: rgba(6, 27, 49, 0.9);
-  color: var(--bia-ivory);
+  background: rgba(22, 41, 74, 0.9);
+  color: var(--bia-mist);
   backdrop-filter: blur(14px);
 }
 
 .site-header--light {
   border-color: var(--bia-line);
-  background: rgba(245, 240, 231, 0.94);
+  background: rgba(233, 241, 254, 0.94);
   color: var(--bia-navy);
   backdrop-filter: blur(14px);
 }
@@ -158,28 +193,23 @@ video {
   text-decoration: none;
 }
 
-.bia-lockup {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 0.05rem;
-  line-height: 1;
+/*
+ * The official logo artwork is 3687x927. The letters take `currentColor`, so the
+ * variant follows the surrounding text colour: mist over navy (the white logo)
+ * and navy over mist (the blue logo). `aspect-ratio` is stated explicitly so
+ * the intrinsic ratio does not depend on the browser inferring it from the
+ * viewBox, which is what decides how wide the lockup sits in the 320px header.
+ */
+.bia-logo {
+  display: block;
+  flex: 0 0 auto;
+  width: auto;
+  height: 1.6rem;
+  aspect-ratio: 3687 / 927;
 }
 
-.bia-lockup__primary {
-  font-family: var(--font-display);
-  font-size: 1.65rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  line-height: 0.9;
-}
-
-.bia-lockup__secondary {
-  /* Placeholder wordmark subline. The official logo replaces this block. */
-  font-size: 0.56rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  line-height: 1.2;
-  opacity: 0.68;
+.bia-logo--footer {
+  height: 2.25rem;
 }
 
 .site-header__desktop-nav {
@@ -283,9 +313,9 @@ video {
 }
 
 .site-header__contact-link:hover {
-  background: var(--bia-copper);
-  border-color: var(--bia-copper);
-  color: var(--bia-ivory);
+  background: var(--bia-blue-deep);
+  border-color: var(--bia-blue);
+  color: var(--bia-mist);
 }
 
 .site-header__menu-button {
@@ -311,9 +341,9 @@ video {
   right: 0;
   left: 0;
   border-bottom: 1px solid var(--bia-line);
-  background: var(--bia-ivory-soft);
+  background: var(--bia-mist-soft);
   color: var(--bia-navy);
-  box-shadow: 0 1.25rem 2.5rem rgba(6, 27, 49, 0.12);
+  box-shadow: 0 1.25rem 2.5rem rgba(22, 41, 74, 0.12);
 }
 
 .site-header__mobile-inner {
@@ -342,7 +372,7 @@ video {
 }
 
 .site-header__mobile-link:hover {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
   padding-left: 0.35rem;
 }
 
@@ -365,9 +395,9 @@ video {
 /* Footer ------------------------------------------------------------------ */
 
 .site-footer {
-  border-top: 1px solid rgba(245, 240, 231, 0.18);
+  border-top: 1px solid rgba(233, 241, 254, 0.18);
   background: var(--bia-navy-deep);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   font-family: var(--font-sans);
 }
 
@@ -380,8 +410,8 @@ video {
   padding: 4rem 1rem 5rem;
 }
 
-.bia-lockup--footer {
-  color: var(--bia-ivory);
+.bia-logo--footer {
+  color: var(--bia-mist);
 }
 
 .site-footer__brand {
@@ -391,7 +421,7 @@ video {
 .site-footer__title {
   max-width: 22rem;
   margin: 0;
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   font-family: var(--font-display);
   font-size: clamp(1.65rem, 4vw, 2.5rem);
   font-weight: 400;
@@ -402,7 +432,7 @@ video {
 .site-footer__note {
   max-width: 20rem;
   margin: 1.5rem 0 0;
-  color: rgba(245, 240, 231, 0.62);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.78rem;
   line-height: 1.65;
 }
@@ -420,7 +450,7 @@ video {
 
 .site-footer__group h3 {
   margin: 0 0 1.1rem;
-  color: rgba(245, 240, 231, 0.52);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.63rem;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -436,7 +466,7 @@ video {
 }
 
 .site-footer__group a {
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   font-size: 0.82rem;
   line-height: 1.4;
   text-decoration: none;
@@ -445,7 +475,7 @@ video {
 .site-footer__group a:hover,
 .site-footer__legal-links a:hover,
 .site-footer__text-link:hover {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
 }
 
 .site-footer__group--action {
@@ -459,8 +489,8 @@ video {
   min-height: 2.8rem;
   align-items: center;
   gap: 0.65rem;
-  border-bottom: 1px solid var(--bia-copper);
-  color: var(--bia-ivory) !important;
+  border-bottom: 1px solid var(--bia-blue);
+  color: var(--bia-mist) !important;
   font-size: 0.75rem !important;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -469,10 +499,10 @@ video {
 
 .site-footer__text-link {
   margin-top: 1rem;
-  color: rgba(245, 240, 231, 0.62) !important;
+  color: rgba(233, 241, 254, 0.68) !important;
   font-size: 0.7rem !important;
   text-decoration: underline;
-  text-decoration-color: rgba(245, 240, 231, 0.35);
+  text-decoration-color: rgba(233, 241, 254, 0.35);
   text-underline-offset: 0.3rem;
 }
 
@@ -485,7 +515,7 @@ video {
   gap: 1rem 1.5rem;
   border-top: 1px solid var(--bia-line-light);
   padding: 1.25rem 1rem 1.5rem;
-  color: rgba(245, 240, 231, 0.54);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.62rem;
   line-height: 1.5;
 }
@@ -499,13 +529,13 @@ video {
 .site-footer__legal-placeholder {
   color: inherit;
   text-decoration: underline;
-  text-decoration-color: rgba(245, 240, 231, 0.3);
+  text-decoration-color: rgba(233, 241, 254, 0.3);
   text-underline-offset: 0.25rem;
 }
 
 .site-footer__locale-switcher {
   margin-left: auto;
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 /* Loading transition ------------------------------------------------------ */
@@ -518,7 +548,7 @@ video {
   place-items: center;
   overflow: hidden;
   background: var(--bia-navy-deep);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   isolation: isolate;
 }
 
@@ -536,7 +566,7 @@ video {
   min-width: 0;
   min-height: 0;
   background: var(--bia-navy);
-  border: 1px solid rgba(245, 240, 231, 0.05);
+  border: 1px solid rgba(233, 241, 254, 0.05);
 }
 
 .bia-loading-transition__content {
@@ -550,13 +580,11 @@ video {
   text-align: center;
 }
 
-.bia-loading-transition__wordmark {
-  color: var(--bia-ivory);
-  font-family: var(--font-display);
-  font-size: clamp(3.5rem, 14vw, 8rem);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  line-height: 0.85;
+.bia-loading-transition__logo {
+  width: clamp(9rem, 42vw, 22rem);
+  height: auto;
+  aspect-ratio: 3687 / 927;
+  color: var(--bia-mist);
 }
 
 .bia-loading-transition__label,
@@ -569,11 +597,11 @@ video {
 }
 
 .bia-loading-transition__label {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
 }
 
 .bia-loading-transition__loading {
-  color: rgba(245, 240, 231, 0.62);
+  color: rgba(233, 241, 254, 0.68);
 }
 
 /* Media and browser surfaces ---------------------------------------------- */
@@ -585,15 +613,15 @@ video {
   place-items: center;
   overflow: hidden;
   background:
-    radial-gradient(circle at 30% 25%, rgba(44, 108, 150, 0.42), transparent 42%),
+    radial-gradient(circle at 30% 25%, rgba(111, 166, 253, 0.42), transparent 42%),
     linear-gradient(135deg, var(--bia-navy) 0%, var(--bia-navy-deep) 100%);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .bia-media-fallback::after {
   position: absolute;
   inset: 1rem;
-  border: 1px solid rgba(245, 240, 231, 0.2);
+  border: 1px solid rgba(233, 241, 254, 0.2);
   content: "";
   pointer-events: none;
 }
@@ -603,7 +631,7 @@ video {
   z-index: 1;
   max-width: 24rem;
   padding: 1rem;
-  color: rgba(245, 240, 231, 0.78);
+  color: rgba(233, 241, 254, 0.78);
   font-size: 0.8rem;
   line-height: 1.5;
   text-align: center;
@@ -618,11 +646,11 @@ video {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
 }
 
 ::-webkit-scrollbar-thumb {
-  border: 2px solid var(--bia-ivory);
+  border: 2px solid var(--bia-mist);
   border-radius: 0;
   background: var(--bia-slate);
 }
@@ -710,7 +738,7 @@ html.lenis {
 .home-page {
   /* Keep the page itself from becoming a scroll container so the Hero can stick. */
   overflow: visible;
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
   color: var(--bia-navy);
 }
 
@@ -737,7 +765,7 @@ html.lenis {
 }
 
 .home-eyebrow--light {
-  color: rgba(245, 240, 231, 0.62);
+  color: rgba(233, 241, 254, 0.68);
 }
 
 .home-section__title {
@@ -753,7 +781,7 @@ html.lenis {
 }
 
 .home-section__title--light {
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .home-section__intro {
@@ -765,7 +793,7 @@ html.lenis {
 }
 
 .home-section__intro--light {
-  color: rgba(245, 240, 231, 0.7);
+  color: rgba(233, 241, 254, 0.7);
 }
 
 .home-section__index {
@@ -798,7 +826,7 @@ html.lenis {
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  border: 1px solid rgba(245, 240, 231, 0.56);
+  border: 1px solid rgba(233, 241, 254, 0.56);
   padding: 0.85rem 1rem;
   font-size: 0.64rem;
   font-weight: 800;
@@ -814,26 +842,26 @@ html.lenis {
 }
 
 .home-hero__cta--solid {
-  background: var(--bia-ivory);
-  border-color: var(--bia-ivory);
+  background: var(--bia-mist);
+  border-color: var(--bia-mist);
   color: var(--bia-navy);
 }
 
 .home-hero__cta--outline {
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .home-hero__cta--solid:hover,
 .home-hero__cta--solid:focus-visible {
-  background: var(--bia-copper);
-  border-color: var(--bia-copper);
-  color: var(--bia-ivory);
+  background: var(--bia-blue-deep);
+  border-color: var(--bia-blue);
+  color: var(--bia-mist);
 }
 
 .home-hero__cta--outline:hover,
 .home-hero__cta--outline:focus-visible {
-  background: var(--bia-ivory);
-  border-color: var(--bia-ivory);
+  background: var(--bia-mist);
+  border-color: var(--bia-mist);
   color: var(--bia-navy);
 }
 
@@ -863,7 +891,7 @@ html.lenis {
   overflow: hidden;
   border: 1px solid var(--bia-line);
   background: var(--bia-navy);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   isolation: isolate;
 }
 
@@ -872,8 +900,8 @@ html.lenis {
   inset: 0;
   z-index: 1;
   background-image:
-    radial-gradient(circle at 18% 24%, rgba(245, 240, 231, 0.16) 0 0.7px, transparent 0.9px),
-    radial-gradient(circle at 72% 64%, rgba(245, 240, 231, 0.12) 0 0.7px, transparent 0.9px);
+    radial-gradient(circle at 18% 24%, rgba(233, 241, 254, 0.16) 0 0.7px, transparent 0.9px),
+    radial-gradient(circle at 72% 64%, rgba(233, 241, 254, 0.12) 0 0.7px, transparent 0.9px);
   background-size: 1.15rem 1.15rem, 1.45rem 1.45rem;
   mix-blend-mode: screen;
   opacity: 0.26;
@@ -885,7 +913,7 @@ html.lenis {
   inset: 12% 8%;
   z-index: 0;
   overflow: hidden;
-  border: 1px solid rgba(245, 240, 231, 0.2);
+  border: 1px solid rgba(233, 241, 254, 0.2);
   transform: rotate(-7deg);
 }
 
@@ -894,7 +922,7 @@ html.lenis {
   display: block;
   width: 140%;
   height: 38%;
-  border: 1px solid rgba(245, 240, 231, 0.22);
+  border: 1px solid rgba(233, 241, 254, 0.22);
   border-radius: 50%;
   transform: translateX(-18%);
 }
@@ -907,7 +935,7 @@ html.lenis {
 .home-media-slot__field-line--two {
   top: 38%;
   left: -3%;
-  border-color: rgba(181, 110, 75, 0.58);
+  border-color: rgba(74, 136, 250, 0.58);
 }
 
 .home-media-slot__field-dot {
@@ -917,8 +945,8 @@ html.lenis {
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  background: var(--bia-copper);
-  box-shadow: 0 0 0 0.55rem rgba(181, 110, 75, 0.16);
+  background: var(--bia-blue);
+  box-shadow: 0 0 0 0.55rem rgba(74, 136, 250, 0.16);
 }
 
 .home-media-slot__field-orbit {
@@ -927,7 +955,7 @@ html.lenis {
   left: 50%;
   width: 70%;
   aspect-ratio: 1.4;
-  border: 1px solid rgba(245, 240, 231, 0.34);
+  border: 1px solid rgba(233, 241, 254, 0.34);
   border-radius: 50%;
   transform: translate(-50%, -50%) rotate(24deg);
 }
@@ -941,7 +969,7 @@ html.lenis {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  color: rgba(245, 240, 231, 0.64);
+  color: rgba(233, 241, 254, 0.64);
   font-size: 0.57rem;
   font-weight: 800;
   letter-spacing: 0.13em;
@@ -951,52 +979,52 @@ html.lenis {
 
 .home-media-slot__meta span:last-child {
   max-width: 11rem;
-  color: rgba(245, 240, 231, 0.42);
+  color: rgba(233, 241, 254, 0.68);
   text-align: right;
 }
 
 .home-media-slot--manifesto {
   background:
-    radial-gradient(circle at 76% 28%, rgba(181, 110, 75, 0.84), transparent 17%),
-    radial-gradient(circle at 20% 72%, rgba(44, 108, 150, 0.85), transparent 36%),
+    radial-gradient(circle at 76% 28%, rgba(74, 136, 250, 0.84), transparent 17%),
+    radial-gradient(circle at 20% 72%, rgba(111, 166, 253, 0.85), transparent 36%),
     var(--bia-navy);
 }
 
 .home-media-slot--origin {
   background:
     radial-gradient(circle at 76% 20%, rgba(93, 123, 104, 0.8), transparent 24%),
-    linear-gradient(145deg, #0b3557 0%, var(--bia-navy-deep) 70%);
+    linear-gradient(145deg, #14284a 0%, var(--bia-navy-deep) 70%);
 }
 
 .home-media-slot--process {
   background:
-    radial-gradient(circle at 28% 72%, rgba(181, 110, 75, 0.84), transparent 24%),
+    radial-gradient(circle at 28% 72%, rgba(74, 136, 250, 0.84), transparent 24%),
     linear-gradient(132deg, var(--bia-blue) 0%, var(--bia-navy) 58%, var(--bia-navy-deep) 100%);
 }
 
 .home-media-slot--brands {
   background:
-    linear-gradient(120deg, rgba(181, 110, 75, 0.74), transparent 37%),
-    linear-gradient(145deg, var(--bia-navy) 0%, #0e3d60 100%);
+    linear-gradient(120deg, rgba(74, 136, 250, 0.74), transparent 37%),
+    linear-gradient(145deg, var(--bia-navy) 0%, #24437c 100%);
 }
 
 .home-media-slot--quality {
   background:
-    radial-gradient(circle at 68% 64%, rgba(181, 110, 75, 0.7), transparent 17%),
+    radial-gradient(circle at 68% 64%, rgba(74, 136, 250, 0.7), transparent 17%),
     linear-gradient(145deg, #385a4b 0%, var(--bia-navy-deep) 76%);
 }
 
 .home-media-slot--talent {
   background:
-    radial-gradient(circle at 22% 30%, rgba(245, 240, 231, 0.2), transparent 18%),
-    linear-gradient(135deg, #a85f42 0%, var(--bia-copper) 48%, #7d4d3a 100%);
+    radial-gradient(circle at 22% 30%, rgba(233, 241, 254, 0.2), transparent 18%),
+    linear-gradient(135deg, var(--bia-blue-deep) 0%, var(--bia-blue) 48%, var(--bia-navy) 100%);
 }
 
 /* Brand manifesto -------------------------------------------------------- */
 
 .home-manifesto {
   border-bottom: 1px solid var(--bia-line);
-  background: var(--bia-ivory-soft);
+  background: var(--bia-mist-soft);
 }
 
 .home-manifesto__inner {
@@ -1018,7 +1046,7 @@ html.lenis {
 .home-manifesto__organization {
   max-width: 29rem;
   margin-top: 2.5rem;
-  border-left: 2px solid var(--bia-copper);
+  border-left: 2px solid var(--bia-blue);
   padding-left: 1.25rem;
 }
 
@@ -1050,7 +1078,7 @@ html.lenis {
   align-items: flex-start;
   gap: 0.8rem;
   margin-top: 2.75rem;
-  color: var(--bia-blue);
+  color: var(--bia-blue-deep);
   font-size: 0.73rem;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -1063,7 +1091,7 @@ html.lenis {
   height: 0.65rem;
   margin-top: 0.25rem;
   border-radius: 50%;
-  background: var(--bia-copper);
+  background: var(--bia-blue);
 }
 
 .home-manifesto__visual {
@@ -1080,7 +1108,7 @@ html.lenis {
   top: 12%;
   right: -0.08em;
   z-index: 2;
-  color: rgba(245, 240, 231, 0.9);
+  color: rgba(233, 241, 254, 0.9);
   font-family: var(--font-display);
   font-size: clamp(5.5rem, 14vw, 13rem);
   letter-spacing: -0.1em;
@@ -1096,7 +1124,7 @@ html.lenis {
   z-index: 2;
   width: 6.5rem;
   height: 9.5rem;
-  border: 1px solid rgba(245, 240, 231, 0.7);
+  border: 1px solid rgba(233, 241, 254, 0.7);
   border-radius: 52% 48% 55% 45%;
   transform: rotate(34deg);
 }
@@ -1107,7 +1135,7 @@ html.lenis {
   bottom: 13%;
   left: 50%;
   width: 1px;
-  background: rgba(245, 240, 231, 0.58);
+  background: rgba(233, 241, 254, 0.58);
   content: "";
   transform: rotate(14deg);
 }
@@ -1127,16 +1155,16 @@ html.lenis {
   display: block;
   width: 3.5rem;
   height: 1px;
-  background: var(--bia-copper);
+  background: var(--bia-blue);
 }
 
 /* Hubs ------------------------------------------------------------------ */
 
 .home-hubs {
   background:
-    radial-gradient(circle at 84% 18%, rgba(44, 108, 150, 0.4), transparent 25%),
+    radial-gradient(circle at 84% 18%, rgba(111, 166, 253, 0.4), transparent 25%),
     var(--bia-navy);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .home-hubs__inner {
@@ -1154,7 +1182,7 @@ html.lenis {
 .home-hubs__detail {
   max-width: 25rem;
   margin-top: 2.5rem;
-  color: rgba(245, 240, 231, 0.68);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.94rem;
   line-height: 1.7;
 }
@@ -1170,7 +1198,7 @@ html.lenis {
   align-items: center;
   gap: 0.85rem;
   margin-top: 3.5rem;
-  color: rgba(245, 240, 231, 0.48);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.63rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -1182,7 +1210,7 @@ html.lenis {
   flex: 0 0 auto;
   width: 2.75rem;
   height: 1px;
-  background: var(--bia-copper);
+  background: var(--bia-blue);
 }
 
 .home-hubs__list {
@@ -1199,7 +1227,7 @@ html.lenis {
 }
 
 .home-hub:hover {
-  background: rgba(245, 240, 231, 0.06);
+  background: rgba(233, 241, 254, 0.06);
   transform: translateX(0.25rem);
 }
 
@@ -1233,7 +1261,7 @@ html.lenis {
 .home-brand__number,
 .home-talent__roles-heading,
 .home-talent__roles li span {
-  color: rgba(245, 240, 231, 0.48);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -1241,7 +1269,7 @@ html.lenis {
 
 .home-hub__body h3 {
   margin: 0;
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   font-family: var(--font-display);
   font-size: clamp(1.55rem, 3vw, 2.75rem);
   font-weight: 400;
@@ -1252,7 +1280,7 @@ html.lenis {
 .home-hub__body p {
   max-width: 27rem;
   margin: 0.8rem 0 0;
-  color: rgba(245, 240, 231, 0.58);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.8rem;
   line-height: 1.55;
 }
@@ -1262,9 +1290,9 @@ html.lenis {
   width: 4.25rem;
   height: 4.25rem;
   place-items: center;
-  border: 1px solid rgba(181, 110, 75, 0.74);
+  border: 1px solid rgba(74, 136, 250, 0.74);
   border-radius: 50%;
-  color: var(--bia-copper);
+  color: var(--bia-blue);
   font-family: var(--font-display);
   font-size: 1.45rem;
   line-height: 1;
@@ -1276,7 +1304,7 @@ html.lenis {
   bottom: 0.75rem;
   left: 1rem;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--bia-copper), transparent);
+  background: linear-gradient(90deg, transparent, var(--bia-blue), transparent);
   opacity: 0;
   transform: scaleX(0.5);
   transition: opacity 220ms ease, transform 220ms ease;
@@ -1290,7 +1318,7 @@ html.lenis {
 /* Origin ---------------------------------------------------------------- */
 
 .home-origin {
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
   color: var(--bia-navy);
 }
 
@@ -1324,14 +1352,14 @@ html.lenis {
   width: 106%;
   height: 87%;
   fill: none;
-  stroke: rgba(245, 240, 231, 0.68);
+  stroke: rgba(233, 241, 254, 0.68);
   stroke-width: 1.2;
   vector-effect: non-scaling-stroke;
 }
 
 .home-origin__contour circle {
-  fill: var(--bia-copper);
-  stroke: var(--bia-ivory);
+  fill: var(--bia-blue);
+  stroke: var(--bia-mist);
   stroke-width: 1.5;
 }
 
@@ -1340,7 +1368,7 @@ html.lenis {
   top: 12%;
   left: 11%;
   z-index: 3;
-  color: rgba(245, 240, 231, 0.72);
+  color: rgba(233, 241, 254, 0.72);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.24em;
@@ -1373,7 +1401,7 @@ html.lenis {
   width: 2.5rem;
   height: 1px;
   margin-top: 0.35rem;
-  background: var(--bia-copper);
+  background: var(--bia-blue);
 }
 
 .home-origin__region-list {
@@ -1389,7 +1417,7 @@ html.lenis {
 }
 
 .home-origin__region-number {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
 }
 
 .home-origin__region h3 {
@@ -1415,7 +1443,7 @@ html.lenis {
   overflow: clip;
   border-top: 1px solid var(--bia-line);
   border-bottom: 1px solid var(--bia-line);
-  background: var(--bia-ivory-soft);
+  background: var(--bia-mist-soft);
 }
 
 .home-process__inner {
@@ -1458,7 +1486,7 @@ html.lenis {
   height: calc(100svh - var(--bia-header-height) - 2rem);
   overflow: hidden;
   border: 1px solid var(--bia-line);
-  background: color-mix(in srgb, var(--bia-ivory-soft) 94%, var(--bia-blue));
+  background: color-mix(in srgb, var(--bia-mist-soft) 94%, var(--bia-blue));
   isolation: isolate;
 }
 
@@ -1521,7 +1549,7 @@ html.lenis {
 }
 
 .process-cinematic__step-number {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
   font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -1552,9 +1580,9 @@ html.lenis {
   display: block;
   width: 0.55rem;
   height: 0.55rem;
-  border: 1px solid var(--bia-copper);
+  border: 1px solid var(--bia-blue);
   border-radius: 50%;
-  background: var(--bia-ivory-soft);
+  background: var(--bia-mist-soft);
 }
 
 .process-cinematic__step[data-active="true"] .process-cinematic__step-number {
@@ -1562,7 +1590,7 @@ html.lenis {
 }
 
 .process-cinematic__step[data-active="true"] .process-cinematic__step-dot {
-  background: var(--bia-copper);
+  background: var(--bia-blue);
 }
 
 .process-cinematic__visual-frame {
@@ -1578,7 +1606,7 @@ html.lenis {
   inset: 0;
   width: 100%;
   overflow: hidden;
-  border: 1px solid rgba(245, 240, 231, 0.16);
+  border: 1px solid rgba(233, 241, 254, 0.16);
   background: var(--bia-navy);
   pointer-events: none;
   transform-origin: center;
@@ -1612,18 +1640,18 @@ html.lenis {
   position: absolute;
   inset: 0;
   display: block;
-  border: 1px solid rgba(245, 240, 231, 0.54);
+  border: 1px solid rgba(233, 241, 254, 0.54);
   border-radius: 50%;
   transform: rotate(32deg) scaleY(0.48);
 }
 
 .process-cinematic__visual-rings span:nth-child(2) {
-  border-color: rgba(181, 110, 75, 0.82);
+  border-color: rgba(74, 136, 250, 0.82);
   transform: rotate(-32deg) scaleY(0.48);
 }
 
 .process-cinematic__visual-rings span:nth-child(3) {
-  border-color: rgba(245, 240, 231, 0.24);
+  border-color: rgba(233, 241, 254, 0.24);
   transform: rotate(90deg) scaleY(0.48);
 }
 
@@ -1632,7 +1660,7 @@ html.lenis {
   right: 8%;
   bottom: 13%;
   z-index: 3;
-  color: rgba(245, 240, 231, 0.85);
+  color: rgba(233, 241, 254, 0.85);
   font-size: 0.63rem;
   font-weight: 800;
   letter-spacing: 0.22em;
@@ -1649,11 +1677,11 @@ html.lenis {
 }
 
 .process-cinematic__variant {
-  --process-variant-accent: var(--bia-copper);
+  --process-variant-accent: var(--bia-blue);
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: linear-gradient(140deg, rgba(44, 108, 150, 0.34), rgba(6, 27, 49, 0.28));
+  background: linear-gradient(140deg, rgba(111, 166, 253, 0.34), rgba(22, 41, 74, 0.28));
 }
 
 .process-cinematic__variant::before {
@@ -1674,7 +1702,7 @@ html.lenis {
   left: 24%;
   width: 52%;
   aspect-ratio: 1;
-  border: 1px solid rgba(245, 240, 231, 0.32);
+  border: 1px solid rgba(233, 241, 254, 0.32);
   border-radius: 50%;
   content: "";
   transform: rotate(-18deg);
@@ -1700,7 +1728,7 @@ html.lenis {
   left: 32%;
   width: 36%;
   height: 24%;
-  border: 1px solid rgba(245, 240, 231, 0.42);
+  border: 1px solid rgba(233, 241, 254, 0.42);
   border-radius: 50%;
   transform: rotate(-32deg);
 }
@@ -1710,7 +1738,7 @@ html.lenis {
   left: 50%;
   width: 1px;
   height: 50%;
-  background: rgba(245, 240, 231, 0.38);
+  background: rgba(233, 241, 254, 0.38);
   transform: rotate(38deg);
 }
 
@@ -1718,14 +1746,14 @@ html.lenis {
   position: absolute;
   right: 8%;
   bottom: 8%;
-  color: rgba(245, 240, 231, 0.62);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.2em;
 }
 
 .process-cinematic__variant[data-variant="seed"] {
-  background: radial-gradient(circle at 50% 50%, rgba(181, 110, 75, 0.42), transparent 26%), linear-gradient(140deg, rgba(44, 108, 150, 0.36), rgba(6, 27, 49, 0.32));
+  background: radial-gradient(circle at 50% 50%, rgba(74, 136, 250, 0.42), transparent 26%), linear-gradient(140deg, rgba(111, 166, 253, 0.36), rgba(22, 41, 74, 0.32));
 }
 
 .process-cinematic__variant[data-variant="seed"] .process-cinematic__variant-shape--one {
@@ -1734,7 +1762,7 @@ html.lenis {
 }
 
 .process-cinematic__variant[data-variant="harvest"] {
-  background: radial-gradient(circle at 68% 34%, rgba(93, 123, 104, 0.68), transparent 30%), linear-gradient(150deg, rgba(44, 108, 150, 0.28), rgba(6, 27, 49, 0.36));
+  background: radial-gradient(circle at 68% 34%, rgba(93, 123, 104, 0.68), transparent 30%), linear-gradient(150deg, rgba(111, 166, 253, 0.28), rgba(22, 41, 74, 0.36));
 }
 
 .process-cinematic__variant[data-variant="harvest"] .process-cinematic__variant-shape--two {
@@ -1752,7 +1780,7 @@ html.lenis {
 }
 
 .process-cinematic__variant[data-variant="processing"] {
-  background: linear-gradient(112deg, rgba(44, 108, 150, 0.62), transparent 46%), repeating-linear-gradient(0deg, transparent 0 14%, rgba(245, 240, 231, 0.12) 14% 15%), linear-gradient(220deg, rgba(6, 27, 49, 0.24), rgba(8, 42, 73, 0.62));
+  background: linear-gradient(112deg, rgba(111, 166, 253, 0.62), transparent 46%), repeating-linear-gradient(0deg, transparent 0 14%, rgba(233, 241, 254, 0.12) 14% 15%), linear-gradient(220deg, rgba(22, 41, 74, 0.24), rgba(28, 53, 101, 0.62));
 }
 
 .process-cinematic__variant[data-variant="processing"] .process-cinematic__variant-shape--two {
@@ -1761,26 +1789,26 @@ html.lenis {
   width: 64%;
   height: 48%;
   border-radius: 0;
-  border-color: rgba(44, 108, 150, 0.82);
+  border-color: rgba(111, 166, 253, 0.82);
   transform: skewY(-10deg);
 }
 
 .process-cinematic__variant[data-variant="processing"] .process-cinematic__variant-shape--three {
   top: 18%;
   height: 64%;
-  background: rgba(44, 108, 150, 0.86);
+  background: rgba(111, 166, 253, 0.86);
   transform: rotate(90deg);
 }
 
 .process-cinematic__variant[data-variant="roasting"] {
-  background: radial-gradient(circle at 46% 52%, rgba(181, 110, 75, 0.76), transparent 22%), radial-gradient(circle at 50% 50%, rgba(245, 240, 231, 0.2), transparent 46%), linear-gradient(140deg, rgba(6, 27, 49, 0.24), rgba(181, 110, 75, 0.32));
+  background: radial-gradient(circle at 46% 52%, rgba(74, 136, 250, 0.76), transparent 22%), radial-gradient(circle at 50% 50%, rgba(233, 241, 254, 0.2), transparent 46%), linear-gradient(140deg, rgba(22, 41, 74, 0.24), rgba(74, 136, 250, 0.32));
 }
 
 .process-cinematic__variant[data-variant="roasting"] .process-cinematic__variant::after {
   top: 16%;
   left: 18%;
   width: 64%;
-  border-color: rgba(181, 110, 75, 0.86);
+  border-color: rgba(74, 136, 250, 0.86);
 }
 
 .process-cinematic__variant[data-variant="roasting"] .process-cinematic__variant-shape--one {
@@ -1792,14 +1820,14 @@ html.lenis {
 }
 
 .process-cinematic__variant[data-variant="grinding"] {
-  background-image: radial-gradient(circle at 22% 32%, rgba(245, 240, 231, 0.5) 0 1px, transparent 1.5px), radial-gradient(circle at 64% 58%, rgba(181, 110, 75, 0.62) 0 1.5px, transparent 2px), radial-gradient(circle at 78% 26%, rgba(245, 240, 231, 0.36) 0 1px, transparent 1.5px), linear-gradient(140deg, rgba(98, 115, 131, 0.52), rgba(6, 27, 49, 0.42));
+  background-image: radial-gradient(circle at 22% 32%, rgba(233, 241, 254, 0.5) 0 1px, transparent 1.5px), radial-gradient(circle at 64% 58%, rgba(74, 136, 250, 0.62) 0 1.5px, transparent 2px), radial-gradient(circle at 78% 26%, rgba(233, 241, 254, 0.36) 0 1px, transparent 1.5px), linear-gradient(140deg, rgba(86, 104, 120, 0.52), rgba(22, 41, 74, 0.42));
   background-size: 34px 34px, 46px 46px, 28px 28px, auto;
 }
 
 .process-cinematic__variant[data-variant="grinding"] .process-cinematic__variant-shape--one,
 .process-cinematic__variant[data-variant="grinding"] .process-cinematic__variant-shape--two {
   border-style: dashed;
-  border-color: rgba(245, 240, 231, 0.52);
+  border-color: rgba(233, 241, 254, 0.52);
 }
 
 .process-cinematic__variant[data-variant="grinding"] .process-cinematic__variant-shape--one {
@@ -1810,7 +1838,7 @@ html.lenis {
 }
 
 .process-cinematic__variant[data-variant="quality"] {
-  background: radial-gradient(circle at 50% 50%, rgba(93, 123, 104, 0.64), transparent 26%), linear-gradient(120deg, rgba(6, 27, 49, 0.28), rgba(44, 108, 150, 0.3));
+  background: radial-gradient(circle at 50% 50%, rgba(93, 123, 104, 0.64), transparent 26%), linear-gradient(120deg, rgba(22, 41, 74, 0.28), rgba(111, 166, 253, 0.3));
 }
 
 .process-cinematic__variant[data-variant="quality"] .process-cinematic__variant-shape--one {
@@ -1833,7 +1861,7 @@ html.lenis {
 }
 
 .process-cinematic__variant[data-variant="distribution"] {
-  background: radial-gradient(circle at 24% 68%, rgba(44, 108, 150, 0.72), transparent 22%), radial-gradient(circle at 74% 28%, rgba(181, 110, 75, 0.42), transparent 24%), linear-gradient(140deg, rgba(6, 27, 49, 0.22), rgba(44, 108, 150, 0.5));
+  background: radial-gradient(circle at 24% 68%, rgba(111, 166, 253, 0.72), transparent 22%), radial-gradient(circle at 74% 28%, rgba(74, 136, 250, 0.42), transparent 24%), linear-gradient(140deg, rgba(22, 41, 74, 0.22), rgba(111, 166, 253, 0.5));
 }
 
 .process-cinematic__variant[data-variant="distribution"] .process-cinematic__variant-shape--one {
@@ -1842,7 +1870,7 @@ html.lenis {
   width: 60%;
   height: 1px;
   border: 0;
-  background: rgba(245, 240, 231, 0.56);
+  background: rgba(233, 241, 254, 0.56);
   transform: rotate(18deg);
 }
 
@@ -1852,7 +1880,7 @@ html.lenis {
   width: 32%;
   height: 32%;
   border-radius: 0;
-  border-color: rgba(44, 108, 150, 0.9);
+  border-color: rgba(111, 166, 253, 0.9);
   transform: rotate(45deg);
 }
 
@@ -1862,7 +1890,7 @@ html.lenis {
   width: 48%;
   height: 64%;
   background: transparent;
-  border: 1px solid rgba(245, 240, 231, 0.34);
+  border: 1px solid rgba(233, 241, 254, 0.34);
   transform: rotate(0deg);
 }
 
@@ -1881,7 +1909,7 @@ html.lenis {
   position: absolute;
   inset: 0;
   display: block;
-  background: var(--bia-copper);
+  background: var(--bia-blue);
   transform-origin: top;
 }
 
@@ -2053,7 +2081,7 @@ html.lenis {
 /* Brands --------------------------------------------------------------- */
 
 .home-brands {
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
 }
 
 .home-brands__header {
@@ -2097,9 +2125,9 @@ html.lenis {
   position: absolute;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(245, 240, 231, 0.58);
+  border: 1px solid rgba(233, 241, 254, 0.58);
   border-radius: 50%;
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 4.5rem);
   letter-spacing: -0.08em;
@@ -2117,7 +2145,7 @@ html.lenis {
   left: 28%;
   width: 12rem;
   height: 12rem;
-  border-color: rgba(181, 110, 75, 0.86);
+  border-color: rgba(74, 136, 250, 0.86);
 }
 
 .home-brands__glyph--3 {
@@ -2132,7 +2160,7 @@ html.lenis {
   bottom: 7%;
   width: 5.5rem;
   height: 5.5rem;
-  border-color: rgba(245, 240, 231, 0.32);
+  border-color: rgba(233, 241, 254, 0.32);
 }
 
 .home-brands__body {
@@ -2159,7 +2187,7 @@ html.lenis {
   width: 2.5rem;
   height: 1px;
   margin-top: 0.35rem;
-  background: var(--bia-copper);
+  background: var(--bia-blue);
 }
 
 .home-brands__list {
@@ -2200,11 +2228,11 @@ html.lenis {
 
 .home-brand:hover .home-brand__inner {
   transform: translateX(0.25rem);
-  color: var(--bia-copper);
+  color: var(--bia-blue);
 }
 
 .home-brand__number {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
 }
 
 .home-brand__inner h3 {
@@ -2224,7 +2252,7 @@ html.lenis {
 }
 
 .home-brand__mark {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -2236,7 +2264,7 @@ html.lenis {
   width: fit-content;
   align-items: center;
   gap: 0.8rem;
-  color: var(--bia-blue);
+  color: var(--bia-blue-deep);
   font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -2277,7 +2305,7 @@ html.lenis {
 .home-motion-story {
   position: relative;
   background: var(--bia-navy-deep);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   isolation: isolate;
   scroll-margin-top: var(--bia-header-height);
 }
@@ -2341,9 +2369,9 @@ html.lenis {
   z-index: 1;
   background: linear-gradient(
     to top,
-    rgba(4, 16, 28, 0.9) 0%,
-    rgba(4, 16, 28, 0.3) 48%,
-    rgba(4, 16, 28, 0.44) 100%
+    rgba(14, 25, 45, 0.9) 0%,
+    rgba(14, 25, 45, 0.3) 48%,
+    rgba(14, 25, 45, 0.44) 100%
   );
 }
 
@@ -2381,7 +2409,7 @@ html.lenis {
 .home-motion-story__description {
   max-width: 34rem;
   margin: 0;
-  color: rgba(245, 240, 231, 0.78);
+  color: rgba(233, 241, 254, 0.78);
   font-size: clamp(0.95rem, 1.35vw, 1.1rem);
   line-height: 1.65;
 }
@@ -2471,7 +2499,7 @@ html.lenis {
 .home-motion-cta__description {
   max-width: 30rem;
   margin: 1.25rem 0 0;
-  color: rgba(245, 240, 231, 0.7);
+  color: rgba(233, 241, 254, 0.7);
   font-size: 0.92rem;
   line-height: 1.7;
 }
@@ -2530,9 +2558,9 @@ html.lenis {
   z-index: 1;
   background: linear-gradient(
     150deg,
-    rgba(6, 27, 49, 0.5) 0%,
-    rgba(6, 27, 49, 0.08) 52%,
-    rgba(6, 27, 49, 0.44) 100%
+    rgba(22, 41, 74, 0.5) 0%,
+    rgba(22, 41, 74, 0.08) 52%,
+    rgba(22, 41, 74, 0.44) 100%
   );
 }
 
@@ -2574,7 +2602,7 @@ html.lenis {
   background:
     radial-gradient(circle at 84% 20%, rgba(93, 123, 104, 0.52), transparent 26%),
     var(--bia-navy);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 /* Bounded two-column row for the copy and the media slot, with the proposition
@@ -2606,7 +2634,7 @@ html.lenis {
   align-items: flex-start;
   gap: 0.75rem;
   margin-top: 3.5rem;
-  color: rgba(245, 240, 231, 0.52);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.7rem;
   line-height: 1.6;
 }
@@ -2617,7 +2645,7 @@ html.lenis {
   width: 2rem;
   height: 1px;
   margin-top: 0.6rem;
-  background: var(--bia-copper);
+  background: var(--bia-blue);
 }
 
 .home-quality__note p {
@@ -2649,9 +2677,9 @@ html.lenis {
   height: 12rem;
   place-content: center;
   gap: 0.35rem;
-  border: 1px solid rgba(245, 240, 231, 0.58);
+  border: 1px solid rgba(233, 241, 254, 0.58);
   border-radius: 50%;
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.2em;
@@ -2665,7 +2693,7 @@ html.lenis {
   right: 8%;
   bottom: 13%;
   z-index: 2;
-  color: rgba(245, 240, 231, 0.75);
+  color: rgba(233, 241, 254, 0.75);
   font-family: var(--font-display);
   font-size: clamp(2.2rem, 5vw, 4.8rem);
   letter-spacing: -0.07em;
@@ -2695,12 +2723,12 @@ html.lenis {
 }
 
 .home-quality__item-number {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
 }
 
 .home-quality__item h3 {
   margin: 0;
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   font-family: var(--font-display);
   font-size: clamp(1.35rem, 2.3vw, 2.15rem);
   font-weight: 400;
@@ -2711,7 +2739,7 @@ html.lenis {
 .home-quality__item p {
   max-width: 26rem;
   margin: 0.65rem 0 0;
-  color: rgba(245, 240, 231, 0.58);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.78rem;
   line-height: 1.55;
 }
@@ -2719,15 +2747,24 @@ html.lenis {
 .home-quality__item-mark {
   width: 0.75rem;
   height: 0.75rem;
-  border: 1px solid var(--bia-copper);
+  border: 1px solid var(--bia-blue);
   border-radius: 50%;
 }
 
 /* Talent band ------------------------------------------------------------ */
 
 .home-talent {
-  background: var(--bia-copper);
-  color: var(--bia-ivory);
+  background: var(--bia-blue-deep);
+  color: var(--bia-mist);
+}
+
+/*
+ * The talent band is the one solid blue-deep surface, so its focus rings need
+ * the pale token. Specificity (0,2,0) beats the global (0,1,0) rule.
+ */
+.home-talent :focus-visible,
+.home-talent :focus-visible::after {
+  outline-color: var(--bia-focus-on-blue);
 }
 
 .home-talent__inner {
@@ -2752,28 +2789,28 @@ html.lenis {
   margin-top: 2.25rem;
 }
 
-.home-cta--copper {
-  background: var(--bia-ivory);
-  border-color: var(--bia-ivory);
+.home-cta--accent {
+  background: var(--bia-mist);
+  border-color: var(--bia-mist);
   color: var(--bia-navy);
 }
 
-.home-cta--copper:hover,
-.home-cta--copper:focus-visible {
+.home-cta--accent:hover,
+.home-cta--accent:focus-visible {
   background: var(--bia-navy);
   border-color: var(--bia-navy);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .home-cta--ghost {
-  border-color: rgba(245, 240, 231, 0.56);
-  color: var(--bia-ivory);
+  border-color: rgba(233, 241, 254, 0.56);
+  color: var(--bia-mist);
 }
 
 .home-cta--ghost:hover,
 .home-cta--ghost:focus-visible {
-  background: var(--bia-ivory);
-  border-color: var(--bia-ivory);
+  background: var(--bia-mist);
+  border-color: var(--bia-mist);
   color: var(--bia-navy);
 }
 
@@ -2785,7 +2822,7 @@ html.lenis {
 .home-talent__careers-note {
   max-width: 24rem;
   margin: 1.5rem 0 0;
-  color: rgba(245, 240, 231, 0.62);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.7rem;
   line-height: 1.55;
 }
@@ -2810,9 +2847,9 @@ html.lenis {
   display: block;
   width: 5rem;
   height: 10rem;
-  border: 1px solid rgba(245, 240, 231, 0.68);
+  border: 1px solid rgba(233, 241, 254, 0.68);
   border-radius: 48% 48% 0 0;
-  background: rgba(8, 42, 73, 0.2);
+  background: rgba(28, 53, 101, 0.2);
 }
 
 .home-talent__visual-people span:nth-child(1) {
@@ -2824,7 +2861,7 @@ html.lenis {
   left: 38%;
   width: 6.5rem;
   height: 12rem;
-  border-color: rgba(245, 240, 231, 0.9);
+  border-color: rgba(233, 241, 254, 0.9);
 }
 
 .home-talent__visual-people span:nth-child(3) {
@@ -2838,7 +2875,7 @@ html.lenis {
   right: 8%;
   bottom: 12%;
   z-index: 3;
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   font-family: var(--font-display);
   font-size: clamp(3rem, 6vw, 5.5rem);
   letter-spacing: 0.1em;
@@ -2847,7 +2884,7 @@ html.lenis {
 
 .home-talent__roles {
   grid-column: 3;
-  border-left: 1px solid rgba(245, 240, 231, 0.32);
+  border-left: 1px solid rgba(233, 241, 254, 0.32);
   padding-left: 1.5rem;
 }
 
@@ -2856,7 +2893,7 @@ html.lenis {
   align-items: center;
   justify-content: space-between;
   gap: 0.8rem;
-  color: rgba(245, 240, 231, 0.58);
+  color: rgba(233, 241, 254, 0.68);
   text-transform: uppercase;
 }
 
@@ -2864,7 +2901,7 @@ html.lenis {
   display: block;
   width: 2rem;
   height: 1px;
-  background: rgba(245, 240, 231, 0.48);
+  background: rgba(233, 241, 254, 0.48);
 }
 
 .home-talent__roles-heading p {
@@ -2878,28 +2915,28 @@ html.lenis {
 }
 
 .home-talent__roles li {
-  border-top: 1px solid rgba(245, 240, 231, 0.28);
-  color: var(--bia-ivory);
+  border-top: 1px solid rgba(233, 241, 254, 0.28);
+  color: var(--bia-mist);
   font-family: var(--font-display);
   font-size: clamp(1.15rem, 2vw, 1.6rem);
   line-height: 1.1;
 }
 
 .home-talent__roles li:last-child {
-  border-bottom: 1px solid rgba(245, 240, 231, 0.28);
+  border-bottom: 1px solid rgba(233, 241, 254, 0.28);
 }
 
 .home-talent__roles li span {
   display: inline-block;
   width: 2.25rem;
-  color: rgba(245, 240, 231, 0.52);
+  color: rgba(233, 241, 254, 0.68);
   font-family: var(--font-sans);
   vertical-align: middle;
 }
 
 .home-talent__role-note {
   margin: 1.5rem 0 0;
-  color: rgba(245, 240, 231, 0.58);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.68rem;
   line-height: 1.6;
 }
@@ -2926,7 +2963,7 @@ html.lenis {
     display: grid;
     grid-template-columns: minmax(9rem, 0.35fr) minmax(0, 1fr);
     gap: 1.5rem 3rem;
-    border-top: 1px solid rgba(245, 240, 231, 0.32);
+    border-top: 1px solid rgba(233, 241, 254, 0.32);
     border-left: 0;
     padding-top: 1.5rem;
     padding-left: 0;
@@ -3179,7 +3216,7 @@ html.lenis {
 
 .careers-page {
   overflow: hidden;
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
   color: var(--bia-navy);
 }
 
@@ -3205,7 +3242,7 @@ html.lenis {
 }
 
 .careers-eyebrow--light {
-  color: rgba(245, 240, 231, 0.66);
+  color: rgba(233, 241, 254, 0.66);
 }
 
 .careers-section__title {
@@ -3221,7 +3258,7 @@ html.lenis {
 }
 
 .careers-section__title--light {
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .careers-section__intro {
@@ -3233,7 +3270,7 @@ html.lenis {
 }
 
 .careers-section__intro--light {
-  color: rgba(245, 240, 231, 0.72);
+  color: rgba(233, 241, 254, 0.72);
 }
 
 .careers-section__detail {
@@ -3272,23 +3309,23 @@ html.lenis {
 }
 
 .careers-link--light {
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
   color: var(--bia-navy);
 }
 
 .careers-link--light:hover {
-  background: var(--bia-copper);
-  color: var(--bia-ivory);
+  background: var(--bia-blue-deep);
+  color: var(--bia-mist);
 }
 
 .careers-link--ghost-light {
-  border-color: rgba(245, 240, 231, 0.42);
-  color: var(--bia-ivory);
+  border-color: rgba(233, 241, 254, 0.42);
+  color: var(--bia-mist);
 }
 
 .careers-link--ghost-light:hover {
-  border-color: var(--bia-ivory);
-  background: var(--bia-ivory);
+  border-color: var(--bia-mist);
+  background: var(--bia-mist);
   color: var(--bia-navy);
 }
 
@@ -3299,9 +3336,9 @@ html.lenis {
   overflow: hidden;
   contain: paint;
   background:
-    radial-gradient(circle at 78% 34%, rgba(44, 108, 150, 0.45), transparent 31%),
-    linear-gradient(132deg, var(--bia-navy-deep) 0%, var(--bia-navy) 58%, #0b3a5f 100%);
-  color: var(--bia-ivory);
+    radial-gradient(circle at 78% 34%, rgba(111, 166, 253, 0.45), transparent 31%),
+    linear-gradient(132deg, var(--bia-navy-deep) 0%, var(--bia-navy) 58%, #1e3c71 100%);
+  color: var(--bia-mist);
   isolation: isolate;
 }
 
@@ -3309,7 +3346,7 @@ html.lenis {
 .careers-hero::after {
   position: absolute;
   z-index: -1;
-  border: 1px solid rgba(245, 240, 231, 0.12);
+  border: 1px solid rgba(233, 241, 254, 0.12);
   content: "";
   pointer-events: none;
 }
@@ -3361,7 +3398,7 @@ html.lenis {
 .careers-hero__description {
   max-width: 33rem;
   margin: 2rem 0 0;
-  color: rgba(245, 240, 231, 0.78);
+  color: rgba(233, 241, 254, 0.78);
   font-size: clamp(1rem, 1.5vw, 1.2rem);
   line-height: 1.65;
 }
@@ -3376,7 +3413,7 @@ html.lenis {
 .careers-hero__note {
   max-width: 28rem;
   margin: 1.5rem 0 0;
-  color: rgba(245, 240, 231, 0.52);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.72rem;
   letter-spacing: 0.04em;
   line-height: 1.55;
@@ -3392,19 +3429,19 @@ html.lenis {
   inset: 1.5rem 0 1.5rem 0;
   min-height: 29rem;
   overflow: hidden;
-  border: 1px solid rgba(245, 240, 231, 0.26);
+  border: 1px solid rgba(233, 241, 254, 0.26);
   background:
-    linear-gradient(145deg, rgba(245, 240, 231, 0.08), transparent 40%),
-    radial-gradient(circle at 48% 46%, rgba(181, 110, 75, 0.4), transparent 13%),
-    #0a3456;
+    linear-gradient(145deg, rgba(233, 241, 254, 0.08), transparent 40%),
+    radial-gradient(circle at 48% 46%, rgba(74, 136, 250, 0.4), transparent 13%),
+    #13284c;
 }
 
 .careers-hero__art-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(245, 240, 231, 0.09) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245, 240, 231, 0.09) 1px, transparent 1px);
+    linear-gradient(rgba(233, 241, 254, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(233, 241, 254, 0.09) 1px, transparent 1px);
   background-size: 3.2rem 3.2rem;
   mask-image: linear-gradient(135deg, black, transparent 78%);
   opacity: 0.6;
@@ -3414,7 +3451,7 @@ html.lenis {
   position: absolute;
   top: 50%;
   left: 50%;
-  border: 1px solid rgba(245, 240, 231, 0.46);
+  border: 1px solid rgba(233, 241, 254, 0.46);
   border-radius: 50%;
   transform: translate(-50%, -50%) rotate(-28deg);
 }
@@ -3427,7 +3464,7 @@ html.lenis {
 .careers-hero__art-orbit--two {
   width: 56%;
   aspect-ratio: 0.8;
-  border-color: rgba(181, 110, 75, 0.8);
+  border-color: rgba(74, 136, 250, 0.8);
   transform: translate(-50%, -50%) rotate(35deg);
 }
 
@@ -3435,7 +3472,7 @@ html.lenis {
   position: absolute;
   top: 50%;
   left: 50%;
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   font-family: var(--font-display);
   font-size: clamp(4rem, 10vw, 8rem);
   letter-spacing: 0.08em;
@@ -3449,7 +3486,7 @@ html.lenis {
   bottom: 1.25rem;
   display: grid;
   gap: 0.2rem;
-  color: rgba(245, 240, 231, 0.68);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.2em;
@@ -3461,7 +3498,7 @@ html.lenis {
   position: absolute;
   top: 1.25rem;
   left: 1.25rem;
-  color: rgba(245, 240, 231, 0.54);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -3475,7 +3512,7 @@ html.lenis {
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  color: rgba(245, 240, 231, 0.48);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -3486,13 +3523,13 @@ html.lenis {
   display: block;
   width: 3.5rem;
   height: 1px;
-  background: rgba(245, 240, 231, 0.46);
+  background: rgba(233, 241, 254, 0.46);
 }
 
 /* Life and values */
 
 .careers-life {
-  background: var(--bia-ivory-soft);
+  background: var(--bia-mist-soft);
   scroll-margin-top: 5rem;
 }
 
@@ -3524,7 +3561,7 @@ html.lenis {
 }
 
 .careers-values {
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
   scroll-margin-top: 5rem;
 }
 
@@ -3545,7 +3582,7 @@ html.lenis {
 
 .careers-value-row:hover {
   transform: translateX(0.25rem);
-  color: var(--bia-blue);
+  color: var(--bia-blue-deep);
 }
 
 .careers-value-row__number,
@@ -3579,16 +3616,16 @@ html.lenis {
 
 .careers-value-row > svg,
 .careers-area-row > svg {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
 }
 
 /* Talent areas */
 
 .careers-areas {
   background:
-    radial-gradient(circle at 84% 20%, rgba(44, 108, 150, 0.34), transparent 28%),
+    radial-gradient(circle at 84% 20%, rgba(111, 166, 253, 0.34), transparent 28%),
     var(--bia-navy);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   scroll-margin-top: 5rem;
 }
 
@@ -3599,7 +3636,7 @@ html.lenis {
 .careers-areas__note {
   max-width: 30rem;
   margin: 1.25rem 0 0;
-  color: rgba(245, 240, 231, 0.5);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.72rem;
   line-height: 1.6;
 }
@@ -3616,21 +3653,21 @@ html.lenis {
   gap: 1.5rem;
   border-bottom: 1px solid var(--bia-line-light);
   padding: 1.8rem 0;
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   transition: transform 220ms ease, background-color 220ms ease;
 }
 
 .careers-area-row:hover {
-  background: rgba(245, 240, 231, 0.06);
+  background: rgba(233, 241, 254, 0.06);
   transform: translateX(0.25rem);
 }
 
 .careers-area-row__number {
-  color: rgba(245, 240, 231, 0.46);
+  color: rgba(233, 241, 254, 0.68);
 }
 
 .careers-area-row__body p {
-  color: rgba(245, 240, 231, 0.6);
+  color: rgba(233, 241, 254, 0.68);
 }
 
 .careers-area-row:nth-child(2) {
@@ -3651,7 +3688,7 @@ html.lenis {
 /* Hiring process */
 
 .careers-process {
-  background: var(--bia-ivory-soft);
+  background: var(--bia-mist-soft);
   scroll-margin-top: 5rem;
 }
 
@@ -3686,21 +3723,21 @@ html.lenis {
 
 .careers-process-row__title-line svg {
   flex: 0 0 auto;
-  color: var(--bia-copper);
+  color: var(--bia-blue);
 }
 
 .careers-process__note {
   position: relative;
   align-self: start;
-  border-top: 1px solid var(--bia-copper);
-  border-bottom: 1px solid var(--bia-copper);
+  border-top: 1px solid var(--bia-blue);
+  border-bottom: 1px solid var(--bia-blue);
   padding: 1.5rem 0;
   color: var(--bia-navy);
 }
 
 .careers-process__note-mark {
   display: block;
-  color: var(--bia-copper);
+  color: var(--bia-blue);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -3716,14 +3753,14 @@ html.lenis {
 }
 
 .careers-process__note > svg {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
 }
 
 /* Openings, FAQ, and closing CTA */
 
 .careers-openings {
   border-top: 1px solid var(--bia-line);
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
   scroll-margin-top: 5rem;
 }
 
@@ -3768,15 +3805,20 @@ html.lenis {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: var(--bia-copper);
-  box-shadow: 0 0 0 0.3rem rgba(181, 110, 75, 0.12);
+  background: var(--bia-blue);
+  box-shadow: 0 0 0 0.3rem rgba(74, 136, 250, 0.12);
 }
 
 .careers-faq {
+  /* Navy like every other dark section, with the brand blue as the accent glow.
+     This panel was briefly painted --bia-blue-deep to carry mist text, but a
+     mid-luminance surface breaks the single-token focus ring: no colour clears
+     3:1 against both mist (L 0.874) and blue-deep (L 0.134). Navy keeps the
+     whole dark-surface family inside the range one focus token can serve. */
   background:
-    linear-gradient(120deg, rgba(6, 27, 49, 0.28), transparent 50%),
-    var(--bia-blue);
-  color: var(--bia-ivory);
+    radial-gradient(circle at 84% 22%, rgba(111, 166, 253, 0.3), transparent 40%),
+    var(--bia-navy);
+  color: var(--bia-mist);
   scroll-margin-top: 5rem;
 }
 
@@ -3788,7 +3830,7 @@ html.lenis {
 
 .careers-faq__intro .careers-eyebrow {
   margin-bottom: 1.5rem;
-  color: rgba(245, 240, 231, 0.62);
+  color: var(--bia-mist);
 }
 
 .careers-faq__list {
@@ -3800,7 +3842,7 @@ html.lenis {
 }
 
 .careers-faq details {
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .careers-faq summary {
@@ -3821,7 +3863,7 @@ html.lenis {
 
 .careers-faq summary svg {
   flex: 0 0 auto;
-  color: rgba(245, 240, 231, 0.7);
+  color: var(--bia-mist);
   transition: transform 180ms ease;
 }
 
@@ -3832,14 +3874,14 @@ html.lenis {
 .careers-faq details p {
   max-width: 38rem;
   margin: -0.5rem 3rem 1.75rem 0;
-  color: rgba(245, 240, 231, 0.7);
+  color: var(--bia-mist);
   font-size: 0.88rem;
   line-height: 1.7;
 }
 
 .careers-cta {
   background: var(--bia-navy-deep);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   scroll-margin-top: 5rem;
 }
 
@@ -4037,7 +4079,7 @@ html.lenis {
 .secondary-page {
   min-width: 0;
   overflow-x: hidden;
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
   color: var(--bia-navy);
 }
 
@@ -4052,13 +4094,13 @@ html.lenis {
 }
 
 .secondary-eyebrow--light {
-  color: rgba(245, 240, 231, 0.66);
+  color: rgba(233, 241, 254, 0.66);
 }
 
 .secondary-pending {
   max-width: 34rem;
   margin: 1rem 0 0;
-  border-left: 2px solid var(--bia-copper);
+  border-left: 2px solid var(--bia-blue);
   padding-left: 0.85rem;
   color: var(--bia-slate);
   font-size: 0.72rem;
@@ -4069,7 +4111,7 @@ html.lenis {
 }
 
 .secondary-pending--light {
-  color: rgba(245, 240, 231, 0.62);
+  color: rgba(233, 241, 254, 0.68);
 }
 
 .secondary-pending--wide {
@@ -4097,23 +4139,23 @@ html.lenis {
 
 .secondary-link:hover {
   transform: translateY(-2px);
-  background: var(--bia-copper);
-  border-color: var(--bia-copper);
-  color: var(--bia-ivory);
+  background: var(--bia-blue-deep);
+  border-color: var(--bia-blue);
+  color: var(--bia-mist);
 }
 
 .secondary-link--light {
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .secondary-link--ghost-light {
-  border-color: rgba(245, 240, 231, 0.42);
-  color: var(--bia-ivory);
+  border-color: rgba(233, 241, 254, 0.42);
+  color: var(--bia-mist);
 }
 
 .secondary-link--ghost-light:hover {
-  background: var(--bia-ivory);
-  border-color: var(--bia-ivory);
+  background: var(--bia-mist);
+  border-color: var(--bia-mist);
   color: var(--bia-navy);
 }
 
@@ -4125,10 +4167,10 @@ html.lenis {
   overflow: hidden;
   contain: paint;
   background:
-    radial-gradient(circle at 78% 22%, rgba(44, 108, 150, 0.42), transparent 42%),
-    radial-gradient(circle at 12% 88%, rgba(181, 110, 75, 0.24), transparent 46%),
+    radial-gradient(circle at 78% 22%, rgba(111, 166, 253, 0.34), transparent 42%),
+    radial-gradient(circle at 12% 88%, rgba(74, 136, 250, 0.12), transparent 46%),
     linear-gradient(168deg, var(--bia-navy) 0%, var(--bia-navy-deep) 100%);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .secondary-hero__inner {
@@ -4150,7 +4192,7 @@ html.lenis {
 .secondary-hero__title {
   max-width: 24ch;
   margin: 1.25rem 0 0;
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   font-family: var(--font-display);
   font-size: clamp(2.7rem, 5.6vw, 5.1rem);
   font-weight: 400;
@@ -4163,7 +4205,7 @@ html.lenis {
 .secondary-hero__description {
   max-width: 36rem;
   margin: 1.75rem 0 0;
-  color: rgba(245, 240, 231, 0.74);
+  color: rgba(233, 241, 254, 0.74);
   font-size: clamp(0.98rem, 1.3vw, 1.12rem);
   line-height: 1.68;
   overflow-wrap: break-word;
@@ -4191,7 +4233,7 @@ html.lenis {
 
 .secondary-hero__aside-title {
   margin: 0;
-  color: rgba(245, 240, 231, 0.72);
+  color: rgba(233, 241, 254, 0.72);
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -4208,7 +4250,7 @@ html.lenis {
 }
 
 .secondary-hero__aside-list li {
-  color: rgba(245, 240, 231, 0.62);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.78rem;
   line-height: 1.5;
 }
@@ -4222,18 +4264,18 @@ html.lenis {
 }
 
 .secondary-section--ivory {
-  background: var(--bia-ivory);
+  background: var(--bia-mist);
 }
 
 .secondary-section--soft {
-  background: var(--bia-ivory-soft);
+  background: var(--bia-mist-soft);
 }
 
 .secondary-section--navy {
   background:
-    radial-gradient(circle at 86% 18%, rgba(44, 108, 150, 0.34), transparent 34%),
+    radial-gradient(circle at 86% 18%, rgba(111, 166, 253, 0.34), transparent 34%),
     var(--bia-navy);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .secondary-section__inner {
@@ -4282,7 +4324,7 @@ html.lenis {
 }
 
 .secondary-section__description--light {
-  color: rgba(245, 240, 231, 0.72);
+  color: rgba(233, 241, 254, 0.72);
 }
 
 .secondary-section__media {
@@ -4307,7 +4349,7 @@ html.lenis {
 }
 
 .secondary-section__media-label--light {
-  color: rgba(245, 240, 231, 0.56);
+  color: rgba(233, 241, 254, 0.68);
 }
 
 /* Abstract visual mark */
@@ -4325,14 +4367,14 @@ html.lenis {
   border-radius: 20px;
   padding: 1.5rem;
   background:
-    linear-gradient(150deg, rgba(44, 108, 150, 0.55), rgba(8, 42, 73, 0.9) 62%),
+    linear-gradient(150deg, rgba(111, 166, 253, 0.55), rgba(28, 53, 101, 0.9) 62%),
     var(--bia-navy);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .secondary-mark--light {
   background:
-    linear-gradient(150deg, rgba(245, 240, 231, 0.16), rgba(6, 27, 49, 0.72) 64%),
+    linear-gradient(150deg, rgba(233, 241, 254, 0.16), rgba(22, 41, 74, 0.72) 64%),
     var(--bia-navy-deep);
 }
 
@@ -4341,8 +4383,8 @@ html.lenis {
   inset: 0;
   z-index: -1;
   background-image:
-    linear-gradient(rgba(245, 240, 231, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245, 240, 231, 0.12) 1px, transparent 1px);
+    linear-gradient(rgba(233, 241, 254, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(233, 241, 254, 0.12) 1px, transparent 1px);
   background-size: 2.5rem 2.5rem;
 }
 
@@ -4355,7 +4397,7 @@ html.lenis {
 }
 
 .secondary-mark__index {
-  color: rgba(245, 240, 231, 0.58);
+  color: rgba(233, 241, 254, 0.68);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.2em;
@@ -4429,7 +4471,7 @@ html.lenis {
 }
 
 .secondary-row__meta-item {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
   font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -4439,21 +4481,21 @@ html.lenis {
 
 .secondary-row__action {
   align-self: center;
-  color: var(--bia-copper);
+  color: var(--bia-blue);
 }
 
 .secondary-row--light {
   border-bottom-color: var(--bia-line-light);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .secondary-row--light .secondary-row__number,
 .secondary-row--light .secondary-row__description {
-  color: rgba(245, 240, 231, 0.6);
+  color: rgba(233, 241, 254, 0.68);
 }
 
 .secondary-row--light .secondary-row__description {
-  color: rgba(245, 240, 231, 0.68);
+  color: rgba(233, 241, 254, 0.68);
 }
 
 /* Timeline */
@@ -4476,7 +4518,7 @@ html.lenis {
 }
 
 .secondary-timeline__period {
-  color: var(--bia-copper);
+  color: var(--bia-blue);
   font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -4532,8 +4574,8 @@ html.lenis {
 
 .secondary-crosslink:hover {
   transform: translateY(-3px);
-  border-color: var(--bia-copper);
-  color: var(--bia-copper);
+  border-color: var(--bia-blue);
+  color: var(--bia-blue);
 }
 
 .secondary-crosslink__label {
@@ -4568,7 +4610,7 @@ html.lenis {
   min-width: 0;
   border: 1px solid var(--bia-line);
   padding: 1.5rem;
-  background: var(--bia-ivory-soft);
+  background: var(--bia-mist-soft);
 }
 
 .secondary-footer-link__label {
@@ -4594,9 +4636,9 @@ html.lenis {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(circle at 16% 82%, rgba(181, 110, 75, 0.26), transparent 44%),
+    radial-gradient(circle at 16% 82%, rgba(74, 136, 250, 0.26), transparent 44%),
     var(--bia-navy-deep);
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   scroll-margin-top: var(--bia-header-height);
 }
 
@@ -4611,7 +4653,7 @@ html.lenis {
 .secondary-cta__title {
   max-width: 24ch;
   margin: 1rem 0 0;
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
   font-family: var(--font-display);
   font-size: clamp(2.2rem, 4.4vw, 4rem);
   font-weight: 400;
@@ -4624,7 +4666,7 @@ html.lenis {
 .secondary-cta__description {
   max-width: 34rem;
   margin: 1.5rem 0 0;
-  color: rgba(245, 240, 231, 0.72);
+  color: rgba(233, 241, 254, 0.72);
   font-size: 1rem;
   line-height: 1.68;
 }
@@ -4731,7 +4773,7 @@ html.lenis {
 /* Secondary page tone helpers -------------------------------------------- */
 
 .secondary-section--navy .secondary-section__title {
-  color: var(--bia-ivory);
+  color: var(--bia-mist);
 }
 
 .secondary-pending--inline {
@@ -4762,7 +4804,7 @@ html.lenis {
 
 .secondary-brand__category {
   margin: 0;
-  color: var(--bia-copper);
+  color: var(--bia-blue);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -4878,14 +4920,6 @@ html.lenis {
 }
 
 @media (max-width: 768px) {
-  /*
-   * The wordmark subline rendered at 7.7px, well below readable. The real logo
-   * replaces it, but the placeholder must still be legible.
-   */
-  .bia-lockup__secondary {
-    font-size: 0.68rem;
-  }
-
   /* The language switcher is a primary control; give it a real tap area. */
   .site-header__locale-button {
     min-width: 2.75rem;

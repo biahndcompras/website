@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useI18n } from '../i18n/I18nProvider';
+import BiaLogo from './layout/BiaLogo';
 
 interface LoadingScreenProps {
   onComplete: () => void;
@@ -88,9 +89,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
         animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? -8 : 0 }}
         transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="bia-loading-transition__wordmark" aria-hidden="true">
-          BIA
-        </div>
+        <BiaLogo className="bia-loading-transition__logo" />
         <p className="bia-loading-transition__label">{t('home.hero.eyebrow')}</p>
         <p className="bia-loading-transition__loading">{t('media.loading')}</p>
       </motion.div>

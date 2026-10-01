@@ -11,6 +11,7 @@ import {
 } from '../../app/routes';
 import type { SecondaryPageId } from '../../content/secondaryPages';
 import type { Locale } from '../../types';
+import BiaLogo from './BiaLogo';
 
 export interface SiteFooterProps {
   className?: string;
@@ -57,15 +58,7 @@ export default function SiteFooter({ className = '' }: SiteFooterProps) {
   const contactLabel = contactPlaceholder?.label[locale] ?? t('footer.contact');
   const homeHref = isHomeRoute ? '#top' : ROUTE_PATHS.home;
   const brandHref = `${ROUTE_PATHS.marcas}#bia-marcas-portafolio`;
-  const lockup = (
-    <span
-      className="bia-lockup bia-lockup--footer"
-      data-logo-placeholder="true"
-    >
-      <span className="bia-lockup__primary">BIA</span>
-      <span className="bia-lockup__secondary">HONDURAS / FOODS</span>
-    </span>
-  );
+  const lockup = <BiaLogo className="bia-logo bia-logo--footer" />;
 
   return (
     <footer

@@ -37,7 +37,7 @@ export default function TalentBand() {
           </p>
           <div className="home-talent__actions">
             <Link
-              className="home-cta home-cta--copper"
+              className="home-cta home-cta--accent"
               to={ROUTE_PATHS.talento}
               state={getRouteNavigationState(locale)}
             >
