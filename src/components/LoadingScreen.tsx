@@ -7,8 +7,11 @@ interface LoadingScreenProps {
   onComplete: () => void;
 }
 
-const HOLD_DURATION_MS = 820;
+// Stated as a total rather than as the hold alone, so the exit animation stays
+// part of the budget instead of being silently added on top of it.
+const TOTAL_DURATION_MS = 2000;
 const EXIT_DURATION_MS = 280;
+const HOLD_DURATION_MS = TOTAL_DURATION_MS - EXIT_DURATION_MS;
 const GRID_COLUMNS = 12;
 const GRID_ROWS = 8;
 
